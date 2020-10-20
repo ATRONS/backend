@@ -11,9 +11,9 @@ router.post('/logout', genericCtrl.logout);
 
 // ------------------------ reader area -----------------------------
 const readerBase = '/reader';
-router.sigup(
+router.post(
     readerBase + '/signup',
-    readerCtrl.signup);
+    genericCtrl.signup);
 
 // ------------------------- provider area --------------------------
 const providerBase = '/provider';
