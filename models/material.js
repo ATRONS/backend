@@ -13,7 +13,11 @@ const MaterialSchema = mongoose.Schema({
     title: { type: String, required: true, trim: true },
     subtitle: { type: String, trim: true },
 
-    file_id: { type: mongoose.Types.ObjectId, required: true },
+    file: {
+        id: { type: mongoose.Types.ObjectId, required: true },
+        size: { type: Number, required: true, min: 1 },
+        mime: { type: String, required: true },
+    },
     cover_img_url: { type: String, required: true },
 
     published_date: { type: Date, required: true },
@@ -56,6 +60,12 @@ const MaterialSchema = mongoose.Schema({
         updatedAt: 'updated_at',
         currentTime: () => luxon.DateTime.utc().valueOf()
     }
+});
+
+MaterialSchema.pre('save', function (next) {
+    // do price validation in here.
+    console.log('material schema pre save called');
+    return next();
 });
 
 MaterialSchema.statics.getMaterial = function (oId, callback) {
