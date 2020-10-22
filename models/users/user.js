@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const validator = require('../helpers/validator');
+const luxon = require('luxon');
+const validator = require('../../helpers/validator');
 const _ = require('lodash');
 
 const COLLECTION = 'users';
@@ -27,7 +28,13 @@ const UserSchema = mongoose.Schema({
     verified: { type: Boolean, default: false },
     active: { type: Boolean, default: true },
     deleted: { type: Boolean, default: false },
-}, { timeStamp: { createdAt: 'created_at', updatedAt: 'updated_at' } });
+}, {
+    timeStamp: {
+        createdAt: 'created_at',
+        updatedAt: 'updated_at',
+        currentTime: () => luxon.DateTime.utc().valueOf()
+    }
+});
 
 UserSchema.path('email').validate(validator.isEmail, 'Email invalid');
 

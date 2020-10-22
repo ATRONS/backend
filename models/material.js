@@ -1,33 +1,38 @@
 const mongoose = require('mongoose');
+const luxon = require('luxon');
 const _ = require('lodash');
 
 const COLLECTION = 'materials';
 
-const BookSchema = mongoose.Schema({
-    ISBN: { type: String, required: true, trim: true },
-    synopsis: { type: String, required: true, trim: true },
-    review: String,
-    generes: { type: [mongoose.Types.ObjectId], required: true },
-});
-
-const MagazineSchema = mongoose.Schema({
-    founded_date: { type: Date, required: true },
-});
-
-const NewspaperSchema = mongoose.Schema({
-    founded_date: { type: Date, required: true },
-});
-
 const MaterialSchema = mongoose.Schema({
+    type: {
+        type: String,
+        required: true,
+        enum: ['BOOK', 'MAGAZINE', 'NEWSPAPER'],
+    },
     title: { type: String, required: true, trim: true },
-    type: { type: String, required: true, enum: ['BOOK', 'MAGAZINE', 'NEWSPAPER'] },
+    subtitle: { type: String, trim: true },
+
     file_id: { type: mongoose.Types.ObjectId, required: true },
     cover_img_url: { type: String, required: true },
+
     published_date: { type: Date, required: true },
+    display_date: { type: String, required: true, trim: true },
+
+    // Book related fields
+    ISBN: { type: String, trim: true, default: null },
+    synopsis: { type: String, trim: true, default: null },
+    review: { type: String, trim: true, default: null },
+    generes: { type: [String], default: [] },
+    keywords: { type: [String], default: [] },
 
     pages: { type: Number, required: true, min: 1 },
     edition: { type: Number, required: true, min: 1 },
-    owners: { type: [mongoose.Types.ObjectId], required: true },
+    provider: {
+        type: mongoose.Types.ObjectId,
+        required: true,
+        ref: 'providers',
+    },
 
     price: {
         free: { type: Boolean, default: false },
@@ -42,15 +47,16 @@ const MaterialSchema = mongoose.Schema({
         value: { type: Number, default: 0 },
         voters: { type: Number, default: 0 },
         groups: { type: [Number], default: [0, 0, 0, 0, 0] },
+    },
+
+    deleted: { type: Boolean, default: false },
+}, {
+    timeStamp: {
+        createdAt: 'created_at',
+        updatedAt: 'updated_at',
+        currentTime: () => luxon.DateTime.utc().valueOf()
     }
-}, { timeStamp: { createdAt: 'created_at', updatedAt: 'updated_at' } });
-
-const autoPopulateRole = function (next) {
-    this.populate('owners', 'firstname lastname _id');
-    next();
-}
-
-MaterialSchema.pre('findOne', autoPopulateRole).pre('find', autoPopulateRole);
+});
 
 MaterialSchema.statics.getMaterial = function (oId, callback) {
     if (_.isUndefined(oId)) return callback('Invalid ObjectId', null);
