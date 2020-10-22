@@ -13,6 +13,10 @@ const ProviderSchema = mongoose.Schema({
     founded_date: Date,
     avatar_url: String,
 
+    preferences: {
+        language: { type: String, required: true, enum: ['ENGLISH', 'AMHARIC'] },
+    },
+
     role: { type: mongoose.Schema.Types.ObjectId, ref: 'roles', required: true },
     password: { type: String, required: true, min: 8, select: false },
     tokens: { type: [String], select: false },

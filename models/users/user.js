@@ -14,6 +14,10 @@ const UserSchema = mongoose.Schema({
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
     avatar_url: { type: String },
 
+    preferences: {
+        language: { type: String, required: true, enum: ['ENGLISH', 'AMHARIC'] },
+    },
+
     role: { type: mongoose.Schema.Types.ObjectId, ref: 'roles', required: true },
     password: { type: String, required: true, min: 8, select: false },
     tokens: { type: [String], select: false },
