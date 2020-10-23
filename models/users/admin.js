@@ -53,11 +53,11 @@ AdminSchema.pre('save', function (next) {
 
 // --------------------------------------------------------------------------
 AdminSchema.methods.isPasswordCorrect = function (password) {
-    return bcrypt.compareSync(password, this.password);
+    return bcrypt.compareSync(password, this.auth.password);
 }
 
 AdminSchema.methods.addSessionId = function (sessionId) {
-    this.tokens.push(sessionId);
+    this.auth.tokens.push(sessionId);
 }
 
 // --------------------------------------------------------------------------
