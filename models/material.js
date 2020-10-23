@@ -32,8 +32,8 @@ const MaterialSchema = mongoose.Schema({
 
     pages: { type: Number, required: true, min: 1 },
     edition: { type: Number, required: true, min: 1 },
-    provider: {
-        type: mongoose.Types.ObjectId,
+    providers: {
+        type: [mongoose.Types.ObjectId],
         required: true,
         ref: 'providers',
     },

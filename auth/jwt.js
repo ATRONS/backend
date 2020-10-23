@@ -7,31 +7,16 @@ ctrl.getRandomBytes = function () {
     return crypto.randomBytes(24).toString('hex');
 }
 
-ctrl.createToken = function (payload, secret) {
+ctrl.createToken = function (payload, secret, callback) {
     payload.sessionId = this.getRandomBytes();
-
-    return new Promise((resolve, _) => {
-        jwt.sign(payload, secret, (err, token) => {
-            if (err) {
-                resolve(false);
-            }
-            else resolve({
-                token: `Bearer ${token}`,
-                sessionId: payload.sessionId,
-            });
-        });
+    jwt.sign(payload, secret, (err, token) => {
+        if (err) return callback('Token generation failed', null);
+        callback(null, { token: `Bearer ${token}`, sessionId: payload.sessionId });
     });
 }
 
-ctrl.verifyToken = function (token, secret) {
-    return new Promise((resolve, _) => {
-        jwt.verify(token, secret, (err, decoded) => {
-            if (err) {
-                resolve(false);
-            }
-            else resolve(decoded);
-        });
-    });
+ctrl.verifyToken = function (token, secret, callback) {
+    jwt.verify(token, secret, callback);
 }
 
 module.exports = ctrl;

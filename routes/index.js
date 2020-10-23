@@ -13,7 +13,23 @@ router.post('/logout', genericCtrl.logout);
 const readerBase = '/reader';
 router.post(
     readerBase + '/signup',
-    genericCtrl.signup);
+    readerCtrl.signup);
+
+router.post(
+    readerBase + '/login',
+    readerCtrl.login);
+
+router.post(
+    readerBase + '/logout',
+    readerCtrl.logout);
+
+router.post(
+    readerBase + '/forgotPassword',
+    readerCtrl.forgotPassword);
+
+router.put(
+    readerBase + '/profile',
+    readerCtrl.updateProfile);
 
 // ------------------------- provider area --------------------------
 const providerBase = '/provider';

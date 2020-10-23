@@ -4,16 +4,17 @@ const luxon = require('luxon');
 const validator = require('../../helpers/validator');
 const _ = require('lodash');
 
-const COLLECTION = 'providers';
+const COLLECTION = 'readers';
 const SALT_FACTOR = 10;
 
 const AuthSchema = require('./sub/auth');
 
-const ProviderSchema = mongoose.Schema({
-    name: { type: String, required: true, trim: true },
+const ReaderSchema = mongoose.Schema({
+    firstname: { type: String, required: true, trim: true },
+    lastname: { type: String, required: true, trim: true },
+    gender: { type: String, required: true, enum: ['MALE', 'FEMALE'] },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
-    avatar_url: { type: String, required: true },
-    // is_company: { type: Boolean, required: true },
+    avatar_url: { type: String },
 
     auth: { type: AuthSchema, required: true },
 
@@ -28,9 +29,9 @@ const ProviderSchema = mongoose.Schema({
     }
 });
 
-ProviderSchema.path('email').validate(validator.isEmail, 'Email invalid');
+ReaderSchema.path('email').validate(validator.isEmail, 'Email invalid');
 
-ProviderSchema.pre('save', function (next) {
+ReaderSchema.pre('save', function (next) {
     const user = this;
 
     if (!user.isModified('auth.password')) return next();
@@ -48,14 +49,26 @@ ProviderSchema.pre('save', function (next) {
 });
 
 // --------------------------------------------------------------------------
-ProviderSchema.methods.isPasswordCorrect = function (password) {
-    return bcrypt.compareSync(password, this.password);
+ReaderSchema.methods.isPasswordCorrect = function (password) {
+    return bcrypt.compareSync(password, this.auth.password);
 }
 
-ProviderSchema.methods.addSessionId = function (sessionId) {
-    this.tokens.push(sessionId);
+ReaderSchema.methods.addSessionId = function (sessionId) {
+    this.auth.tokens.push(sessionId);
 }
 
 // --------------------------------------------------------------------------
+ReaderSchema.statics.getUser = function (oId, callback) {
+    if (!_.isString(oId)) return callback('Invalid ObjectId', null);
 
-module.exports = mongoose.model(COLLECTION, ProviderSchema);
+    this.model(COLLECTION).findOne({ _id: oId }, callback);
+}
+
+ReaderSchema.statics.getUserByToken = function (token, callback) {
+    if (!_.isString(token)) return callback('Invalid token', null);
+
+    this.model(COLLECTION).findOne({ 'auth.tokens': token }, callback);
+}
+
+
+module.exports = mongoose.model(COLLECTION, ReaderSchema);

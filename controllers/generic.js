@@ -1,4 +1,3 @@
-const UserSchema = require('../models/user');
 const jwtCtrl = require('../auth/jwt');
 const luxon = require('luxon');
 const emailer = require('../emailer/emailer');
@@ -12,41 +11,6 @@ const logger = global.logger;
 
 const ctrl = {};
 
-ctrl.signup = async function (req, res, next) {
-    const now = luxon.DateTime.utc();
-    const inFifteenMinutes = now.plus(luxon.Duration.fromObject({ minutes: 15 }));
-
-    const user = new UserSchema({
-        firstname: req.body.firstname,
-        lastname: req.body.lastname,
-        email: req.body.email,
-        password: req.body.password,
-        gender: req.body.gender,
-        role: req.body.role,
-        verify_email_hash: jwtCtrl.getRandomBytes(),
-        verify_email_expire: inFifteenMinutes.valueOf(),
-    });
-
-    const secret = process.env.ENCR_SECRET;
-    const token = await jwtCtrl.createToken({ userId: user._id }, secret);
-    if (!token) {
-        logger.error('token generation failed');
-        return failure(res, 'Internal Error', 500);
-    }
-
-    user.addSessionId(token.sessionId);
-
-    user.save((err, savedUser) => {
-        if (err) {
-            if (err.message || err.errors) return failure(res, err, 400);
-            else if (err.driver) return failure(res, 'Email already taken');
-
-            logger.error(err);
-            return failure(res, 'Internal Error', 500);
-        }
-        success(res, savedUser);
-    });
-}
 
 ctrl.login = async function (req, res, next, secret, Schema) {
     const required = ['email', 'password'];

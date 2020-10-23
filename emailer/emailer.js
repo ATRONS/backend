@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-const logger = require('../logger/logger');
+const logger = global.logger;
 
 class EmailSender {
     constructor() {
@@ -22,7 +22,7 @@ class EmailSender {
         try {
             const mailHTML = `
             <div>
-                <h2>Verify your email to start using Care Reps</h2>
+                <h2>Verify your email to start using Atrons</h2>
                 <a href="${url}">Verify Email</a>
             </div>
             `;

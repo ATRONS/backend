@@ -37,19 +37,14 @@ async.series([
 
 function startServer() {
     const express = require('express');
-    const bodyParser = require('body-parser');
     const morgan = require('morgan');
     const app = express();
     const server = require('http').createServer(app);
     const port = process.env.PORT || 5000;
 
-    app.use(bodyParser.urlencoded({ limit: '2mb', extended: false }));
-    app.use(bodyParser.json({ limit: '2mb' }));
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: false }));
     app.use(morgan('dev'));
-    app.use((req, res, next) => {
-        logger.debug(req.method, req.body);
-        next();
-    });
 
     const router = require('./routes');
     app.use('/api/v1', router);
