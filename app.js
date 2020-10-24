@@ -1,5 +1,4 @@
 const config = require('dotenv').config();
-const db = require('./database/db');
 const winston = require('winston');
 const async = require('async');
 
@@ -25,11 +24,14 @@ if (process.env.NODE_ENV !== 'production') {
 global.logger = logger;
 global.env = process.env.NODE_ENV || 'development';
 
+const db = require('./database/db');
+
 async.series([
     function (callback) {
         const url = process.env.MONGO_URL;
         db.init(url, callback);
-    }
+    },
+    db.createDefaultAdmin,
 ], function (err, results) {
     if (err) return logger.error(err);
     startServer();
@@ -55,5 +57,10 @@ function startServer() {
 
     server.listen(port, '0.0.0.0', () => {
         logger.info('server listening on port ' + port);
+    });
+
+    server.on('error', (err) => {
+        logger.error(err);
+        server.close();
     });
 }
