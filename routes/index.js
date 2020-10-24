@@ -1,15 +1,10 @@
 const adminCtrl = require('../controllers/admin');
 const providerCtrl = require('../controllers/provider');
 const readerCtrl = require('../controllers/reader');
-const genericCtrl = require('../controllers/generic');
 
 const authMiddleware = require('../middleware/auth');
 
 const router = require('express').Router();
-
-// ------------------------ common area -----------------------------
-router.post('/login', genericCtrl.login);
-router.post('/logout', genericCtrl.logout);
 
 // ------------------------ reader area -----------------------------
 const readerBase = '/reader';
@@ -89,5 +84,10 @@ router.put(
     adminBase + '/profile',
     authMiddleware.authenticateAdmin,
     adminCtrl.updateProfile);
+
+router.post(
+    adminBase + '/users/provider',
+    authMiddleware.authenticateAdmin,
+    adminCtrl.createProvider);
 
 module.exports = router;
