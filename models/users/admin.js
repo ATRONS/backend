@@ -15,7 +15,7 @@ const AdminSchema = mongoose.Schema({
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
     avatar_url: { type: String },
 
-    role: { type: mongoose.Schema.Types.ObjectId, ref: 'roles', required: true },
+    // role: { type: mongoose.Schema.Types.ObjectId, ref: 'roles', required: true },
     auth: { type: AuthSchema, required: true },
 }, {
     timeStamp: {
@@ -76,7 +76,7 @@ AdminSchema.statics.getUser = function (oId, callback) {
 AdminSchema.statics.getUserByToken = function (token, callback) {
     if (!_.isString(token)) return callback('Invalid token', null);
 
-    this.model(COLLECTION).findOne({ tokens: token }, callback);
+    this.model(COLLECTION).findOne({ 'auth.tokens': token }, callback);
 }
 
 
