@@ -15,12 +15,12 @@ const AuthorSchema = mongoose.Schema({
         type: Date,
         default: luxon.DateTime.utc().valueOf(),
     },
-});
+}, { _id: false });
 
 const CompanySchema = mongoose.Schema({
     hq_address: { type: String, required: true, trim: true },
     founded_date: { type: Date, required: true },
-});
+}, { _id: false });
 
 const ProviderSchema = mongoose.Schema({
     name: { type: String, required: true, trim: true, },
