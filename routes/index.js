@@ -1,8 +1,33 @@
 const adminCtrl = require('../controllers/admin');
 const providerCtrl = require('../controllers/provider');
 const readerCtrl = require('../controllers/reader');
-
 const authMiddleware = require('../middleware/auth');
+
+const multer = require('multer');
+const GridFsStorage = require('multer-gridfs-storage');
+
+const MATERIAL_SIZE_LIMIT = 100 * 1024 * 1024; // 100 Mb
+const IMG_SIZE_LIMIT = 2 * 1024 * 1024; // 2 Mb
+
+const materialStorage = new GridFsStorage({
+    url: process.env.MONGO_URL,
+    file: (req, file) => ({ bucketName: 'materials' }),
+});
+
+const imgStorage = new GridFsStorage({
+    url: process.env.MONGO_URL,
+    file: (req, file) => ({ bucketName: 'images' }),
+});
+
+const materialUpload = multer({
+    storage: materialStorage,
+    limits: { fileSize: MATERIAL_SIZE_LIMIT }
+});
+
+const imgUpload = multer({
+    storage: imgStorage,
+    limits: { fileSize: IMG_SIZE_LIMIT }
+});
 
 const router = require('express').Router();
 
@@ -35,6 +60,12 @@ router.put(
     authMiddleware.authenticateReader,
     readerCtrl.updateProfile);
 
+router.post(
+    readerBase + '/upload/image',
+    authMiddleware.authenticateReader,
+    imgUpload.single('image'),
+    readerCtrl.uploadFile);
+
 // ------------------------- provider area --------------------------
 const providerBase = '/provider';
 router.post(
@@ -59,6 +90,12 @@ router.put(
     providerBase + '/profile',
     authMiddleware.authenticateProvider,
     providerCtrl.updateProfile);
+
+router.post(
+    providerBase + '/upload/image',
+    authMiddleware.authenticateProvider,
+    imgUpload.single('image'),
+    providerCtrl.uploadFile);
 
 // ------------------------- admin area -----------------------------
 const adminBase = '/admin';
@@ -89,5 +126,29 @@ router.post(
     adminBase + '/users/provider',
     authMiddleware.authenticateAdmin,
     adminCtrl.createProvider);
+
+router.post(
+    adminBase + '/material',
+    authMiddleware.authenticateAdmin,
+    (req, res) => res.end('POST /material'));
+
+router.post(
+    adminBase + '/upload/material',
+    authMiddleware.authenticateAdmin,
+    materialUpload.single('material'),
+    adminCtrl.uploadFile);
+
+router.post(
+    adminBase + '/upload/image',
+    authMiddleware.authenticateAdmin,
+    imgUpload.single('image'),
+    adminCtrl.uploadFile);
+
+// -------------------------------- media upload download section -------------------------
+const mediaBase = '/media';
+
+router.get(
+    mediaBase + '/images/:id',
+    (req, res) => res.end('here is the image'));
 
 module.exports = router;
