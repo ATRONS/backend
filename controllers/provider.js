@@ -25,4 +25,6 @@ ctrl.initialData = function (req, res, next) {
     success(res, response);
 }
 
+ctrl.uploadFile = genericCtrl.uploadFile;
+
 module.exports = ctrl;

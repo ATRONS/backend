@@ -1,5 +1,3 @@
-const { runInContext } = require("lodash");
-const { loggers } = require("winston");
 const { failure, success } = require("../helpers/response");
 
 const AdminSchema = require('../models/users/admin');
@@ -34,7 +32,8 @@ ctrl.initialData = function (req, res, next) {
 
 ctrl.createProvider = function (req, res, next) {
     const provider = new ProviderSchema({
-        name: req.body.name,
+        legal_name: req.body.legal_name,
+        display_name: req.body.display_name,
         email: req.body.email,
         auth: {
             password: req.body.password,
@@ -61,6 +60,8 @@ ctrl.createProvider = function (req, res, next) {
     });
 
 }
+
+ctrl.uploadFile = genericCtrl.uploadFile;
 
 ctrl.addAdmin = function (req, res, next) { res.end('add admin'); }
 

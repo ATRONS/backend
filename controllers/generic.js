@@ -131,4 +131,9 @@ ctrl.resendVerificationEmail = function (req, res, next) {
     });
 }
 
+ctrl.uploadFile = function (req, res, next) {
+    if (!req.file) return failure(res, 'Empty request');
+    success(res, req.file);
+}
+
 module.exports = ctrl;
