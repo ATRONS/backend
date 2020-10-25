@@ -23,7 +23,8 @@ const CompanySchema = mongoose.Schema({
 }, { _id: false });
 
 const ProviderSchema = mongoose.Schema({
-    name: { type: String, required: true, trim: true, },
+    legal_name: { type: String, required: true, trim: true },
+    display_name: { type: String, required: true, trim: true, },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
     avatar_url: { type: String, required: true },
 
@@ -64,6 +65,9 @@ ProviderSchema.path('email').validate(validator.isEmail, 'Email invalid');
 
 ProviderSchema.pre('save', function (next) {
     const user = this;
+
+    if (user.is_company) user.author_info = undefined;
+    else user.company_info = undefined;
 
     if (!user.isModified('auth.password')) return next();
 
