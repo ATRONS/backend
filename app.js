@@ -52,7 +52,15 @@ function startServer() {
     app.use('/api/v1', router);
 
     app.use((err, req, res, next) => {
-        res.status(404).end('Not found');
+        if (!err) return res.status(404).end('Not found');
+        if (err.name === 'MulterError') {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).end('file too big');
+            }
+            return res.status(400).end('Bad Request');
+        }
+        logger.error(err);
+        return res.status(500).end('Internal Error');
     });
 
     server.listen(port, '0.0.0.0', () => {
