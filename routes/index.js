@@ -1,6 +1,7 @@
 const adminCtrl = require('../controllers/admin');
 const providerCtrl = require('../controllers/provider');
 const readerCtrl = require('../controllers/reader');
+const genericCtrl = require('../controllers/generic');
 const authMiddleware = require('../middleware/auth');
 
 const multer = require('multer');
@@ -124,23 +125,23 @@ router.put(
 
 router.post(
     adminBase + '/users/provider',
-    authMiddleware.authenticateAdmin,
+    // authMiddleware.authenticateAdmin,
     adminCtrl.createProvider);
 
 router.post(
     adminBase + '/material',
-    authMiddleware.authenticateAdmin,
-    (req, res) => res.end('POST /material'));
+    // authMiddleware.authenticateAdmin,
+    adminCtrl.createMaterial);
 
 router.post(
     adminBase + '/upload/material',
-    authMiddleware.authenticateAdmin,
+    // authMiddleware.authenticateAdmin,
     materialUpload.single('material'),
     adminCtrl.uploadFile);
 
 router.post(
     adminBase + '/upload/image',
-    authMiddleware.authenticateAdmin,
+    // authMiddleware.authenticateAdmin,
     imgUpload.single('image'),
     adminCtrl.uploadFile);
 
@@ -148,7 +149,11 @@ router.post(
 const mediaBase = '/media';
 
 router.get(
+    mediaBase + '/materials/:id',
+    genericCtrl.downloadFile('materials'));
+
+router.get(
     mediaBase + '/images/:id',
-    (req, res) => res.end('here is the image'));
+    genericCtrl.downloadFile('images'));
 
 module.exports = router;
