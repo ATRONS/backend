@@ -2,6 +2,7 @@ const { failure, success } = require("../helpers/response");
 
 const AdminSchema = require('../models/users/admin');
 const ProviderSchema = require('../models/users/provider');
+const MaterialSchema = require('../models/material');
 const genericCtrl = require('./generic');
 
 const logger = global.logger;
@@ -62,6 +63,37 @@ ctrl.createProvider = function (req, res, next) {
 }
 
 ctrl.uploadFile = genericCtrl.uploadFile;
+
+ctrl.createMaterial = function (req, res, next) {
+    const material = new MaterialSchema({
+        type: req.body.type,
+        title: req.body.title,
+        subtitle: req.body.subtitle,
+        file: req.body.file,
+        cover_img_url: req.body.cover_img_url,
+        published_date: req.body.published_date,
+        display_date: req.body.display_date,
+        ISBN: req.body.ISBN,
+        synopsis: req.body.synopsis,
+        review: req.body.review,
+        tags: req.body.tags,
+        pages: req.body.pages,
+        edition: req.body.edition,
+        provider: req.body.provider,
+        price: req.body.price,
+    });
+
+    material.save((err, result) => {
+        if (err) {
+            if (err.errors) return failure(res, err);
+
+            logger.error(err);
+            return failure(res, 'Internal Error', 500);
+        }
+
+        success(res, result);
+    });
+}
 
 ctrl.addAdmin = function (req, res, next) { res.end('add admin'); }
 
