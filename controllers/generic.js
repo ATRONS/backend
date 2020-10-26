@@ -2,6 +2,7 @@ const AdminSchema = require('../models/users/admin');
 const ProviderSchema = require('../models/users/provider');
 const ReaderSchema = require('../models/users/reader');
 
+const mongoose = require('mongoose');
 const jwtCtrl = require('../auth/jwt');
 const luxon = require('luxon');
 const emailer = require('../emailer/emailer');
@@ -10,6 +11,19 @@ const {
     success,
     failure,
 } = require('../helpers/response');
+
+const mongo = mongoose.mongo;
+const db = mongoose.connection.db;
+
+const materialsBucket = new mongo.GridFSBucket(db, {
+    chunkSizeBytes: 1024,
+    bucketName: 'materials',
+});
+
+const imagesBucket = new mongo.GridFSBucket(db, {
+    chunkSizeBytes: 1024,
+    bucketName: 'images',
+});
 
 const logger = global.logger;
 
@@ -133,7 +147,39 @@ ctrl.resendVerificationEmail = function (req, res, next) {
 
 ctrl.uploadFile = function (req, res, next) {
     if (!req.file) return failure(res, 'Empty request');
-    success(res, req.file);
+
+    const response = {
+        id: req.file.id,
+        size: req.file.size,
+        contentType: req.file.contentType,
+        mimetype: req.file.mimetype,
+        url: `/media/${req.file.bucketName}/${req.file.id}`,
+    };
+    success(res, response);
+}
+
+ctrl.downloadFile = function (bucketName) {
+    const bucket = bucketName === 'materials' ? materialsBucket : imagesBucket;
+
+    return function (req, res, next) {
+        let id = req.params.id.trim();
+        if (!mongoose.isValidObjectId(id)) {
+            return failure(res, 'Not found', 404);
+        }
+        id = mongoose.Types.ObjectId(id);
+        const files = bucket.find({ _id: id });
+        files.toArray((err, results) => {
+            if (err) return failure(res, err);
+            if (!results.length) return failure(res, 'Not found', 404);
+
+            bucket.openDownloadStream(id).
+                pipe(res).
+                on('error', function (error) {
+                    logger.error(error);
+                    failure(res, 'Internal Error', 500);
+                });
+        });
+    }
 }
 
 module.exports = ctrl;
