@@ -4,36 +4,44 @@ const _ = require('lodash');
 
 const COLLECTION = 'materials';
 
+const FileSchema = mongoose.Schema({
+    id: { type: mongoose.Types.ObjectId, required: true },
+    size: { type: Number, required: true, min: 1 },
+    mimetype: { type: String, required: true },
+    contentType: { type: String, required: true },
+    url: { type: String, required: true },
+});
+
 const MaterialSchema = mongoose.Schema({
     type: {
         type: String,
         required: true,
+        trim: true,
         enum: ['BOOK', 'MAGAZINE', 'NEWSPAPER'],
     },
     title: { type: String, required: true, trim: true },
     subtitle: { type: String, trim: true },
 
-    file: {
-        id: { type: mongoose.Types.ObjectId, required: true },
-        size: { type: Number, required: true, min: 1 },
-        mime: { type: String, required: true },
-    },
+    file: { type: FileSchema, required: true },
     cover_img_url: { type: String, required: true },
 
     published_date: { type: Date, required: true },
     display_date: { type: String, required: true, trim: true },
 
     // Book related fields
-    ISBN: { type: String, trim: true, default: null },
-    synopsis: { type: String, trim: true, default: null },
-    review: { type: String, trim: true, default: null },
-    generes: { type: [String], default: [] },
-    keywords: { type: [String], default: [] },
+    ISBN: { type: String, trim: true },
+    synopsis: {
+        type: String,
+        trim: true,
+        required: function () { return this.type === 'BOOK' }
+    },
+    review: { type: String, trim: true },
+    tags: { type: [String], default: [] },
 
     pages: { type: Number, required: true, min: 1 },
     edition: { type: Number, required: true, min: 1 },
-    providers: {
-        type: [mongoose.Types.ObjectId],
+    provider: {
+        type: mongoose.Types.ObjectId,
         required: true,
         ref: 'providers',
     },
