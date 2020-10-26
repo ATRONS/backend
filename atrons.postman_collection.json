@@ -1,0 +1,693 @@
+{
+	"info": {
+		"_postman_id": "37878db5-4c4b-4388-8cef-b356e54fc326",
+		"name": "atrons_backend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "admin",
+			"item": [
+				{
+					"name": "account related",
+					"item": [
+						{
+							"name": "login",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "email",
+											"value": "dawit@gmail.com",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "aassword",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{local_url}}/admin/login",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "logout",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/admin/logout",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"logout"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "edit profile",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/admin/profile",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"profile"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "forgot password",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/admin/forgotPassword",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"forgotPassword"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "provider mgmt",
+					"item": [
+						{
+							"name": "create provider",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"legal_name\": \"Alemayehu Gelagay\",\r\n    \"display_name\": \"Alazar Bizen\",\r\n    \"email\": \"alaazaaro@gmail.com\",\r\n    \"password\": \"password\",\r\n    \"avatar_url\": \"this is the url\",\r\n    \"is_company\": false,\r\n    \"author_info\": {\r\n        \"dob\": \"11/09/1965\",\r\n        \"active_from\": \"11/04/2000\"\r\n    },\r\n    \"provides\": \"BOOK\",\r\n    \"[only use if is_company=true and remove author_info]company_info\": {\r\n        \"hq_address\": \"kazanchis\",\r\n        \"founded_date\": \"12/11/1992\"\r\n    },\r\n    \"about\": \"alemayehu wishes to have lived 35 years ago\",\r\n    \"preferences\": {\r\n        \"language\": \"AMHARIC\"\r\n    }\r\n\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{local_url}}/admin/users/provider",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"users",
+										"provider"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "material management",
+					"item": [
+						{
+							"name": "create material",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"type\": \"BOOK\",\r\n    \"title\": \"ሐሰተኛው\",\r\n    \"subtitle\": \"በእምነት ስም\",\r\n    \"file\": {\r\n        \"id\": \"5f9687779369b33188a24906\",\r\n        \"size\": 4004,\r\n        \"contentType\": \"image/png\",\r\n        \"mimetype\": \"image/png\",\r\n        \"url\": \"/media/materials/5f9687779369b33188a24906\"\r\n    },\r\n    \"cover_img_url\": \"/media/images/someidhere\",\r\n    \"published_date\": \"11/12/2013\",\r\n    \"display_date\": \"ግንቦት 2005\",\r\n    \"ISBN\": \"OPTIONAL\",\r\n    \"synopsis\": \"REQUIRED FOR TYPE BOOK, NOT ALLOWED FOR OTHER TYPES\",\r\n    \"review\": \"OPTIONAL\",\r\n    \"tags\": [\"ረጅም ልቦለድ\", \"ጦማራዊ\", \"ድህረ ዘመናዊ\"],\r\n    \"pages\": 302,\r\n    \"edition\": 1,\r\n    \"provider\": \"5f9687779369b33188a24906\",\r\n    \"price\": {\r\n        \"free\": false,\r\n        \"selling\": 15,\r\n        \"rent\": {\r\n            \"value\": 5,\r\n            \"per\": 1\r\n        }\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{local_url}}/admin/material",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"material"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "upload material",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "material",
+											"type": "file",
+											"src": "/C:/Users/HP/Desktop/github.PNG"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{local_url}}/admin/upload/material",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"upload",
+										"material"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "initialData",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local_url}}/admin/initialData",
+							"host": [
+								"{{local_url}}"
+							],
+							"path": [
+								"admin",
+								"initialData"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload image",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/C:/Users/HP/Desktop/github.PNG"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local_url}}/admin/upload/image",
+							"host": [
+								"{{local_url}}"
+							],
+							"path": [
+								"admin",
+								"upload",
+								"image"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "30ca71ee-4259-4848-8f18-b0a5dd83eb48",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "8056d982-3306-40e4-9ed6-d8a1af4cbbe5",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "provider",
+			"item": [
+				{
+					"name": "account related",
+					"item": [
+						{
+							"name": "login",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "email",
+											"value": "dawit@gmail.com",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "aassword",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{local_url}}/provider/login",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"provider",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "logout",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/provider/logout",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"provider",
+										"logout"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "edit profile",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/provider/profile",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"provider",
+										"profile"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "forgot password",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/provider/forgotPassword",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"provider",
+										"forgotPassword"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "initialData",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local_url}}/provider/initialData",
+							"host": [
+								"{{local_url}}"
+							],
+							"path": [
+								"provider",
+								"initialData"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload image",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/C:/Users/HP/Desktop/github.PNG"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local_url}}/provider/upload/image",
+							"host": [
+								"{{local_url}}"
+							],
+							"path": [
+								"provider",
+								"upload",
+								"image"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "reader",
+			"item": [
+				{
+					"name": "account related",
+					"item": [
+						{
+							"name": "signup",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"firstname\": \"Abebe\",\r\n    \"lastname\": \"Biqila\",\r\n    \"gender\": \"MALE\",\r\n    \"email\": \"hiskel@gmail.com\",\r\n    \"password\": \"password\",\r\n    \"preferences\": {\r\n        \"language\": \"ENGLISH\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{local_url}}/reader/signup",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"reader",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "login",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "email",
+											"value": "dawit@gmail.com",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "aassword",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{local_url}}/reader/login",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"reader",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "logout",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/reader/logout",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"reader",
+										"logout"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "edit profile",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/reader/profile",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"reader",
+										"profile"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "forgot password",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/reader/forgotPassword",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"reader",
+										"forgotPassword"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "initialData",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local_url}}/reader/initialData",
+							"host": [
+								"{{local_url}}"
+							],
+							"path": [
+								"reader",
+								"initialData"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload image",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/C:/Users/HP/Desktop/github.PNG"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local_url}}/reader/upload/image",
+							"host": [
+								"{{local_url}}"
+							],
+							"path": [
+								"reader",
+								"upload",
+								"image"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "c07b2ee9-630f-4ae7-a456-c2be5f87c746",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "c3a7b122-b913-4acf-ae87-57bfef8c6c18",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "common",
+			"item": [
+				{
+					"name": "download image",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local_url}}/media/images/5f9583d3d6ad7b0d443b1594",
+							"host": [
+								"{{local_url}}"
+							],
+							"path": [
+								"media",
+								"images",
+								"5f9583d3d6ad7b0d443b1594"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "download material",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local_url}}/media/materials/5f958b7b6c27b91f94566300",
+							"host": [
+								"{{local_url}}"
+							],
+							"path": [
+								"media",
+								"materials",
+								"5f958b7b6c27b91f94566300"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "7340f8bc-717a-4e66-b810-e74b4a6b0ea6",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "dc972f17-9a78-448e-9418-3f2e4e995d6f",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "ac51e439-9bce-4163-bdd1-f774af416934",
+			"key": "local_url",
+			"value": "http://localhost:5000/api/v1"
+		}
+	],
+	"protocolProfileBehavior": {}
+}
