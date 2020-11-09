@@ -120,14 +120,93 @@
 									}
 								},
 								"url": {
-									"raw": "{{local_url}}/admin/users/provider",
+									"raw": "{{local_url}}/admin/users/providers",
 									"host": [
 										"{{local_url}}"
 									],
 									"path": [
 										"admin",
 										"users",
-										"provider"
+										"providers"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update provider",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n            \"display_name\": \"Alazar Bizen\",\r\n            \"avatar_url\": \"this is the url\",\r\n            \"[IF COMPANY]company_info\": {\r\n                \"hq_address\": \"kazanchis\",\r\n                \"founded_date\": \"1992-12-10T21:00:00.000Z\"\r\n            },\r\n            \"author_info\": {\r\n                \"active_from\": \"2000-11-03T21:00:00.000Z\",\r\n                \"dob\": \"1965-11-08T21:00:00.000Z\"\r\n            },\r\n            \"provides\": \"BOOK\",\r\n            \"about\": \"alemayehu wishes to have lived 35 years ago\",\r\n            \"preferences\": {\r\n                \"language\": \"AMHARIC\"\r\n            }\r\n        }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{local_url}}/admin/users/providers/5f958958ca58032cc4e3a299",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"users",
+										"providers",
+										"5f958958ca58032cc4e3a299"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get providers",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/admin/users/providers?type=author&page=0",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"users",
+										"providers"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "author",
+											"description": "// author | company"
+										},
+										{
+											"key": "page",
+											"value": "0"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete provider",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/admin/users/providers/5f9589a9295a3d3354d831db",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"users",
+										"providers",
+										"5f9589a9295a3d3354d831db"
 									]
 								}
 							},
@@ -248,6 +327,16 @@
 					"response": []
 				}
 			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1Zjk0MTdkZDg4OWEyNzEyZTBlNmRhNjkiLCJzZXNzaW9uSWQiOiI4MGRmMGMxMmRiNzQ3NWQwZWM5NGJkY2MxNTJlYjRkMzc1NzIxZjc4YmZiMTJjZjAiLCJpYXQiOjE2MDM1NDE0MDd9.HAEeAW8IuJy2xKsyujy0chrHoMACtPr8AzwtMpiqD94",
+						"type": "string"
+					}
+				]
+			},
 			"event": [
 				{
 					"listen": "prerequest",
@@ -591,6 +680,16 @@
 					"response": []
 				}
 			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZjkyZWE5MGMyNmYxMzM1MDQ4MjlmZTIiLCJzZXNzaW9uSWQiOiI5ODY2ZWIyNWIzYjA0Y2ZjYzUyYjU5YjdmMTgzMzRhNDNkNWZkMTQ0NDhkMzgxNjciLCJpYXQiOjE2MDM0NjU2Nzd9.-UXso9Ube3aLmesL2a--1g10menO6WC5nSymggcsXKU",
+						"type": "string"
+					}
+				]
+			},
 			"event": [
 				{
 					"listen": "prerequest",
@@ -684,7 +783,7 @@
 	],
 	"variable": [
 		{
-			"id": "ac51e439-9bce-4163-bdd1-f774af416934",
+			"id": "330e6966-52fe-4dc7-8cfc-c600ab83bc9e",
 			"key": "local_url",
 			"value": "http://localhost:5000/api/v1"
 		}

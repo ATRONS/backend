@@ -2,11 +2,24 @@
 Materials can be of type BOOK, MAGAZINE, NEWSPAPER
 
 ## Admin endpoints  
-### POST /api/v1/admin/users/provider
+### POST /api/v1/admin/users/providers
 creates a provider (company or author)
 author_info required if is_company == false
 company_info required if is_company == true
 returns the created provider document.
+
+### GET /api/v1/admin/users/providers
+required query param: type [author/company]
+optional query param: page [default 0]
+returns a list of providers
+
+### PUT /api/v1/admin/users/providers/:id
+accepts all model fields except the unchanging ones (auth related, legal_name etc..)
+returns the updated document
+
+### DELETE /api/v1/admin/users/providers/:id
+performs a softdelete on a provider
+returns a success or failure message
 
 ### POST /api/v1/admin/material
 creates a material
