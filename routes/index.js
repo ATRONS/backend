@@ -34,6 +34,7 @@ const router = require('express').Router();
 
 // ------------------------ reader area -----------------------------
 const readerBase = '/reader';
+
 router.post(
     readerBase + '/signup',
     readerCtrl.signup);
@@ -113,20 +114,35 @@ router.post(
     adminBase + '/forgotPassword',
     adminCtrl.forgotPassword);
 
-router.get(
-    adminBase + '/initialData',
-    authMiddleware.authenticateAdmin,
-    adminCtrl.initialData);
-
 router.put(
     adminBase + '/profile',
     authMiddleware.authenticateAdmin,
     adminCtrl.updateProfile);
 
+router.get(
+    adminBase + '/initialData',
+    authMiddleware.authenticateAdmin,
+    adminCtrl.initialData);
+
+router.get(
+    adminBase + '/users/providers',
+    // authMiddleware.authenticateAdmin,
+    adminCtrl.getProviders);
+
 router.post(
-    adminBase + '/users/provider',
+    adminBase + '/users/providers',
     // authMiddleware.authenticateAdmin,
     adminCtrl.createProvider);
+
+router.put(
+    adminBase + '/users/providers/:id',
+    // authMiddleware.authenticateAdmin,
+    adminCtrl.updateProviderInfo);
+
+router.delete(
+    adminBase + '/users/providers/:id',
+    // authMiddleware.authenticateAdmin,
+    adminCtrl.deleteProvider);
 
 router.post(
     adminBase + '/material',
