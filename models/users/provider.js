@@ -106,6 +106,20 @@ ProviderSchema.statics.getProviders = function (isCompany, page, callback) {
         exec(callback);
 }
 
+ProviderSchema.statics.searchProvidersByName = function (name, page, callback) {
+    if (!_.isFinite(page)) page = 0;
+
+    const searchRegex = RegExp(`^${name}`, 'i');
+
+    this.model(COLLECTION).
+        find({ display_name: searchRegex, 'auth.deleted': false }).
+        select('-auth -__v').
+        skip(page * LIMIT).
+        limit(LIMIT).
+        lean().
+        exec(callback);
+}
+
 ProviderSchema.statics.updateProvider = function (id, update, callback) {
     this.model(COLLECTION).
         findOne({ _id: id }).

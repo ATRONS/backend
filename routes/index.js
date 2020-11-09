@@ -129,6 +129,11 @@ router.get(
     // authMiddleware.authenticateAdmin,
     adminCtrl.getProviders);
 
+router.get(
+    adminBase + '/users/providers/search',
+    // authMiddleware.authenticateAdmin,
+    adminCtrl.searchProviders);
+
 router.post(
     adminBase + '/users/providers',
     // authMiddleware.authenticateAdmin,

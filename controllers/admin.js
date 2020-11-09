@@ -112,6 +112,22 @@ ctrl.getProviders = function (req, res, next) {
     });
 }
 
+ctrl.searchProviders = function (req, res, next) {
+    if (!_.isString(req.query.name)) return failure(res, 'name query param is required');
+    const name = _.toLower(_.trim(req.query.name));
+    const page = isNaN(Number(req.query.page)) ? 0 : Math.abs(Number(req.query.page));
+
+    ProviderSchema.searchProvidersByName(name, page, function (err, providers) {
+        if (err) {
+            if (err.errors) return failure(res, err);
+            logger.error(err);
+            return failure(res, 'Internal Error', 500);
+        }
+
+        return success(res, providers);
+    });
+}
+
 ctrl.uploadFile = genericCtrl.uploadFile;
 
 ctrl.createMaterial = function (req, res, next) {
