@@ -4,6 +4,8 @@ const AdminSchema = require('../models/users/admin');
 const ProviderSchema = require('../models/users/provider');
 const MaterialSchema = require('../models/material');
 const genericCtrl = require('./generic');
+const _ = require('lodash');
+const { isValidObjectId } = require("mongoose");
 
 const logger = global.logger;
 
@@ -60,6 +62,54 @@ ctrl.createProvider = function (req, res, next) {
         success(res, result);
     });
 
+}
+
+ctrl.updateProviderInfo = function (req, res, next) {
+    if (!isValidObjectId(req.params.id)) return failure(res, 'invalid id');
+
+    ProviderSchema.updateProvider(req.params.id, req.body, function (err, result) {
+        if (err) {
+            if (err.errors) return failure(res, err);
+            logger.error(err);
+            return failure(res, 'Internal Error', 500);
+        }
+        if (!result) return failure(res, 'Provider not found', 404);
+        return success(res, result);
+    });
+}
+
+ctrl.deleteProvider = function (req, res, next) {
+    if (!isValidObjectId(req.params.id)) return failure(res, 'invalid id');
+
+    ProviderSchema.softDelete(req.params.id, function (err, result) {
+        if (err) {
+            if (err.errors) return failure(res, err);
+            logger.error(err);
+            return failure(res, 'Internal Error', 500);
+        }
+
+        return result.nModified === 1 ?
+            success(res, 'Provider deleted') :
+            failure(res, 'Could not delete provider');
+    });
+}
+
+ctrl.getProviders = function (req, res, next) {
+    if (!_.isString(req.query.type)) return failure(res, 'type query param is required');
+    const type = _.toLower(_.trim(req.query.type));
+    if (type !== 'author' && type !== 'company') return failure(res, 'unknown provider type');
+    const isCompany = type == 'company';
+    const page = isNaN(Number(req.query.page)) ? 0 : Math.abs(Number(req.query.page));
+
+    ProviderSchema.getProviders(isCompany, page, function (err, providers) {
+        if (err) {
+            if (err.errors) return failure(res, err);
+            logger.error(err);
+            return failure(res, 'Internal Error', 500);
+        }
+
+        return success(res, providers);
+    });
 }
 
 ctrl.uploadFile = genericCtrl.uploadFile;

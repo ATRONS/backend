@@ -68,9 +68,30 @@ ctrl.logout = genericCtrl.logout;
 
 ctrl.forgotPassword = function (req, res, next) { res.end('reader forgot password') }
 
+ctrl.changePassword = function (req, res, next) { res.end('reader change password'); }
+
 ctrl.updateProfile = function (req, res, next) { res.end('reader update profile') }
 
-// ----------------------- others -----------------------------------------
+ctrl.deleteAccount = function (req, res, next) { res.end('reader delete account'); }
+
+ctrl.getWishList = function (req, res, next) { res.end('reader get wishlist'); }
+
+ctrl.addToWishlist = function (req, res, next) { res.end('reader add to wishlist'); }
+
+ctrl.removeFromWishlist = function (req, res, next) { res.end('reader remove from wishlist'); }
+
+ctrl.getSuggestions = function (req, res, next) { res.end('reader get suggestions'); }
+
+ctrl.getOwnedMaterials = function (req, res, next) { res.end('reader get owned materials'); }
+
+ctrl.getFeaturedMaterials = function (req, res, next) { res.end('reader get featured materials'); }
+
+ctrl.getMaterials = function (req, res, next) { res.end('reader get materials'); }
+
+ctrl.getMaterialDetail = function (req, res, next) { res.end('reader get material detail'); }
+
+ctrl.searchForMaterial = function (req, res, next) { res.end('reader search for material'); }
+
 ctrl.initialData = function (req, res, next) {
     req.user.auth = undefined;
 
