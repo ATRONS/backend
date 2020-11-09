@@ -163,6 +163,26 @@
 							"response": []
 						},
 						{
+							"name": "delete provider",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/admin/users/providers/5f9589a9295a3d3354d831db",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"users",
+										"providers",
+										"5f9589a9295a3d3354d831db"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "get providers",
 							"request": {
 								"method": "GET",
@@ -193,12 +213,12 @@
 							"response": []
 						},
 						{
-							"name": "delete provider",
+							"name": "search providers",
 							"request": {
-								"method": "DELETE",
+								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{local_url}}/admin/users/providers/5f9589a9295a3d3354d831db",
+									"raw": "{{local_url}}/admin/users/providers/search?name=al",
 									"host": [
 										"{{local_url}}"
 									],
@@ -206,7 +226,14 @@
 										"admin",
 										"users",
 										"providers",
-										"5f9589a9295a3d3354d831db"
+										"search"
+									],
+									"query": [
+										{
+											"key": "name",
+											"value": "al",
+											"description": "// other search parameters will be added in the future"
+										}
 									]
 								}
 							},
@@ -783,7 +810,7 @@
 	],
 	"variable": [
 		{
-			"id": "330e6966-52fe-4dc7-8cfc-c600ab83bc9e",
+			"id": "ccaec28d-cb68-4176-bae7-4997054f0b8e",
 			"key": "local_url",
 			"value": "http://localhost:5000/api/v1"
 		}

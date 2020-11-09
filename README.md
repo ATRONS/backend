@@ -13,6 +13,12 @@ required query param: type [author/company]
 optional query param: page [default 0]
 returns a list of providers
 
+### GET /api/v1/admin/users/providers/search
+required query param: name
+optional query param: page [default 0]
+other query params will be added in the future
+retrieves list of providers that start with the name
+
 ### PUT /api/v1/admin/users/providers/:id
 accepts all model fields except the unchanging ones (auth related, legal_name etc..)
 returns the updated document
