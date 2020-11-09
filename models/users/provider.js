@@ -6,6 +6,7 @@ const _ = require('lodash');
 
 const COLLECTION = 'providers';
 const SALT_FACTOR = 10;
+const LIMIT = 10;
 
 const AuthSchema = require('./sub/auth');
 
@@ -93,5 +94,41 @@ ProviderSchema.methods.addSessionId = function (sessionId) {
 }
 
 // --------------------------------------------------------------------------
+
+ProviderSchema.statics.getProviders = function (isCompany, page, callback) {
+    if (!_.isFinite(page)) page = 0;
+    this.model(COLLECTION).
+        find({ is_company: isCompany, 'auth.deleted': false }).
+        select('-auth -__v').
+        skip(page * LIMIT).
+        limit(LIMIT).
+        lean().
+        exec(callback);
+}
+
+ProviderSchema.statics.updateProvider = function (id, update, callback) {
+    this.model(COLLECTION).
+        findOne({ _id: id }).
+        select('-auth -__v').
+        exec(function (err, provider) {
+            if (err) return callback(err);
+            if (!provider) return callback(null, null);
+
+            provider.display_name = update.display_name || provider.display_name;
+            provider.avatar_url = update.avatar_url || provider.avatar_url;
+            provider.author_info = update.author_info || provider.author_info;
+            provider.company_info = update.company_info || provider.company_info;
+            provider.about = update.about || provider.about;
+            provider.preferences = update.preferences || provider.preferences;
+
+            provider.save(callback);
+        });
+}
+
+ProviderSchema.statics.softDelete = function (id, callback) {
+    this.model(COLLECTION).
+        updateOne({ _id: id }, { $set: { 'auth.deleted': true } }).
+        exec(callback);
+}
 
 module.exports = mongoose.model(COLLECTION, ProviderSchema);
