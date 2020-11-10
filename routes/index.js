@@ -150,9 +150,29 @@ router.delete(
     adminCtrl.deleteProvider);
 
 router.post(
-    adminBase + '/material',
+    adminBase + '/materials',
     // authMiddleware.authenticateAdmin,
     adminCtrl.createMaterial);
+
+router.get(
+    adminBase + '/materials',
+    // authMiddleware.authenticateAdmin,
+    adminCtrl.searchMaterials);
+
+router.get(
+    adminBase + '/materials/:id',
+    // authMiddleware.authenticateAdmin,
+    adminCtrl.getMaterial);
+
+router.put(
+    adminBase + '/materials/:id',
+    // authMiddleware.authenticateAdmin,
+    adminCtrl.updateMaterial);
+
+router.delete(
+    adminBase + '/materials/:id',
+    // authMiddleware.authenticateAdmin,
+    adminCtrl.deleteMaterial);
 
 router.post(
     adminBase + '/upload/material',

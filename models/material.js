@@ -82,54 +82,62 @@ MaterialSchema.pre('save', function (next) {
 });
 
 MaterialSchema.statics.getMaterial = function (oId, callback) {
-    if (_.isUndefined(oId)) return callback('Invalid ObjectId', null);
-
     this.model(COLLECTION)
         .findOne({ _id: oId })
+        .populate('provider', '+display_name +id')
         .lean()
         .exec(callback);
 }
 
-MaterialSchema.statics.getByType = function (type, page, callback) {
-    if (!_.isString(type)) return callback('Invalid type', null);
-    if (!_.isFinite(page)) page = 0;
+MaterialSchema.statics.updateMaterial = function (oId, update, callback) {
+    this.model(COLLECTION)
+        .findOne({ _id: oId })
+        .exec(function (err, material) {
+            if (err) return callback(err);
+            if (!material) return callback(null, null);
 
-    type = type.trim().toUpperCase();
+            material.type = update.type || material.type;
+            material.title = update.title || material.title;
+            material.subtitle = update.subtitle || material.subtitle;
+            material.file = update.file || material.file;
+            material.price = update.price || material.price;
+            material.cover_img_url = update.cover_img_url || material.cover_img_url;
+            material.published_date = update.published_date || material.published_date;
+            material.display_date = update.published_date || material.published_date;
+            material.ISBN = update.ISBN || material.ISBN;
+            material.synopsis = update.synopsis || material.synopsis;
+            material.review = update.review || material.review;
+            material.tags = update.tags || material.tags;
+            material.pages = update.pages || material.pages;
+            material.edition = update.edition || material.edition;
+            material.provider = update.provider || material.provider;
+
+            material.save(callback);
+        });
+}
+
+MaterialSchema.statics.search = function (filters, page, callback) {
+    if (!_.isFinite(page)) page = 0;
+    const query = {};
+
+    if (filters.title) {
+        query.$text = { $search: text, $caseSensitive: false };
+    }
+    if (filters.type) query.type = filters.type.trim().toUpperCase();
+    query.deleted = false;
+    console.log(query);
 
     this.model(COLLECTION)
-        .find({ type })
+        .find(query)
         .skip(page * LIMIT)
         .limit(LIMIT)
         .lean()
         .exec(callback);
 }
 
-MaterialSchema.statics.getByTag = function (tag, page, callback) {
-    if (!_.isString(tag)) return callback('Invalid tag', null);
-    if (!_.isFinite(page)) page = 0;
-
+MaterialSchema.statics.softDelete = function (oId, callback) {
     this.model(COLLECTION)
-        .find({ tags: tag })
-        .skip(page * LIMIT)
-        .limit(LIMIT)
-        .lean()
-        .exec(callback);
-}
-
-MaterialSchema.statics.search = function (text, page, callback) {
-    if (!_.isString(text)) return callback('Invalid text', null);
-    if (!_.isFinite(page)) page = 0;
-
-    this.model(COLLECTION)
-        .find({
-            $text: {
-                $search: text,
-                $caseSensitive: false,
-            }
-        })
-        .skip(page * LIMIT)
-        .limit(LIMIT)
-        .lean()
+        .updateOne({ _id: oId }, { $set: { deleted: true } })
         .exec(callback);
 }
 

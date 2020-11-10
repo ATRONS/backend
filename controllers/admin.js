@@ -6,6 +6,7 @@ const MaterialSchema = require('../models/material');
 const genericCtrl = require('./generic');
 const _ = require('lodash');
 const { isValidObjectId } = require("mongoose");
+const material = require("../models/material");
 
 const logger = global.logger;
 
@@ -79,7 +80,6 @@ ctrl.deleteProvider = function (req, res, next) {
 
     ProviderSchema.softDelete(req.params.id, function (err, result) {
         if (err) {
-            if (err.errors) return failure(res, err);
             logger.error(err);
             return failure(res, 'Internal Error', 500);
         }
@@ -113,7 +113,7 @@ ctrl.searchProviders = function (req, res, next) {
     const name = _.toLower(_.trim(req.query.name));
     const page = isNaN(Number(req.query.page)) ? 0 : Math.abs(Number(req.query.page));
 
-    ProviderSchema.searchProvidersByName(name, page, function (err, providers) {
+    ProviderSchema.search(name, page, function (err, providers) {
         if (err) {
             if (err.errors) return failure(res, err);
             logger.error(err);
@@ -157,6 +157,64 @@ ctrl.createMaterial = function (req, res, next) {
     });
 }
 
+ctrl.updateMaterial = function (req, res, next) {
+    if (!isValidObjectId(req.params.id)) return failure(res, 'Invalid id');
+
+    MaterialSchema.updateMaterial(req.params.id, req.body, function (err, material) {
+        if (err) {
+            if (err.errors) return failure(res, err);
+            logger.error(err);
+            return failure(res, 'Internal Error', 500);
+        }
+
+        if (!material) return failure(res, 'Material not found', 404);
+        return success(res, material);
+    });
+}
+
+ctrl.deleteMaterial = function (req, res, next) {
+    if (!isValidObjectId(req.params.id)) return failure(res, 'Invalid id');
+
+    MaterialSchema.softDelete(req.params.id, function (err, result) {
+        if (err) {
+            logger.error(err);
+            return failure(res, 'Internal Error', 500);
+        }
+
+        return result.nModified === 1 ?
+            success(res, 'Material deleted') :
+            failure(res, 'Could not delete material');
+    });
+}
+
+ctrl.getMaterial = function (req, res, next) {
+    if (!isValidObjectId(req.params.id)) return failure(res, 'Invalid id');
+
+    MaterialSchema.getMaterial(req.params.id, function (err, material) {
+        if (err) {
+            logger.error(err);
+            return failure(res, 'Internal Error', 500);
+        }
+
+        return success(res, material);
+    });
+}
+
+ctrl.searchMaterials = function (req, res, next) {
+    const page = isNaN(Number(req.query.page)) ? 0 : Math.abs(Number(req.query.page));
+
+    MaterialSchema.search(req.query, page, function (err, materials) {
+        if (err) {
+            if (err.errors) return failure(res, err);
+            logger.error(err);
+            return failure(res, 'Internal Error', 500);
+        }
+
+        return success(res, materials);
+    });
+}
+
+// ---------------------------------------------------------
 ctrl.addAdmin = function (req, res, next) { res.end('add admin'); }
 
 module.exports = ctrl;
