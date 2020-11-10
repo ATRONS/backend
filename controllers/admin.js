@@ -41,13 +41,9 @@ ctrl.createProvider = function (req, res, next) {
         auth: {
             password: req.body.password,
         },
-        avatar_url: req.body.avatar_url,
-        is_company: req.body.is_company,
+        is_company: !!req.body.company_info,
         company_info: req.body.company_info,
         author_info: req.body.author_info,
-        provides: req.body.provides,
-        about: req.body.about,
-        preferences: req.body.preferences,
     });
 
     provider.save((err, result) => {
