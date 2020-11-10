@@ -25,11 +25,11 @@ const CompanySchema = mongoose.Schema({
 
 const ProviderSchema = mongoose.Schema({
     legal_name: { type: String, required: true, trim: true },
-    display_name: { type: String, required: true, trim: true, },
+    display_name: { type: String, required: true, trim: true, index: true },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
-    avatar_url: { type: String, required: true },
+    avatar_url: { type: String },
 
-    is_company: { type: Boolean, required: true },
+    is_company: { type: Boolean, required: true, },
 
     company_info: {
         type: CompanySchema,
@@ -44,15 +44,15 @@ const ProviderSchema = mongoose.Schema({
     provides: {
         type: String,
         enum: ['BOOK', 'MAGAZINE', 'NEWSPAPER'],
-        required: true
+        sparse: true,
     },
 
-    about: { type: String, required: true },
+    about: { type: String, default: '' },
 
     auth: { type: AuthSchema, required: true },
 
     preferences: {
-        language: { type: String, required: true, enum: ['ENGLISH', 'AMHARIC'] },
+        language: { type: String, enum: ['ENGLISH', 'AMHARIC'] },
     },
 }, {
     timeStamp: {

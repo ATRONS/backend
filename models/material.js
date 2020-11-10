@@ -3,6 +3,7 @@ const luxon = require('luxon');
 const _ = require('lodash');
 
 const COLLECTION = 'materials';
+const LIMIT = 10;
 
 const FileSchema = mongoose.Schema({
     id: { type: mongoose.Types.ObjectId, required: true },
@@ -18,8 +19,9 @@ const MaterialSchema = mongoose.Schema({
         required: true,
         trim: true,
         enum: ['BOOK', 'MAGAZINE', 'NEWSPAPER'],
+        index: true,
     },
-    title: { type: String, required: true, trim: true },
+    title: { type: String, required: true, trim: true, },
     subtitle: { type: String, trim: true },
 
     file: { type: FileSchema, required: true },
@@ -29,14 +31,14 @@ const MaterialSchema = mongoose.Schema({
     display_date: { type: String, required: true, trim: true },
 
     // Book related fields
-    ISBN: { type: String, trim: true },
+    ISBN: { type: String, trim: true, sparse: true },
     synopsis: {
         type: String,
         trim: true,
         required: function () { return this.type === 'BOOK' }
     },
     review: { type: String, trim: true },
-    tags: { type: [String], default: [] },
+    tags: { type: [String], default: [], index: true },
 
     pages: { type: Number, required: true, min: 1 },
     edition: { type: Number, required: true, min: 1 },
@@ -44,6 +46,7 @@ const MaterialSchema = mongoose.Schema({
         type: mongoose.Types.ObjectId,
         required: true,
         ref: 'providers',
+        index: true,
     },
 
     price: {
@@ -56,7 +59,7 @@ const MaterialSchema = mongoose.Schema({
     },
 
     rating: {
-        value: { type: Number, default: 0 },
+        value: { type: Number, default: 0, index: true },
         voters: { type: Number, default: 0 },
         groups: { type: [Number], default: [0, 0, 0, 0, 0] },
     },
@@ -70,6 +73,8 @@ const MaterialSchema = mongoose.Schema({
     }
 });
 
+MaterialSchema.index({ title: 'text', subtitle: 'text' });
+
 MaterialSchema.pre('save', function (next) {
     // do price validation in here.
     console.log('material schema pre save called');
@@ -79,7 +84,10 @@ MaterialSchema.pre('save', function (next) {
 MaterialSchema.statics.getMaterial = function (oId, callback) {
     if (_.isUndefined(oId)) return callback('Invalid ObjectId', null);
 
-    this.model(COLLECTION).findOne({ _id: oId }, callback);
+    this.model(COLLECTION)
+        .findOne({ _id: oId })
+        .lean()
+        .exec(callback);
 }
 
 MaterialSchema.statics.getByType = function (type, page, callback) {
@@ -87,11 +95,41 @@ MaterialSchema.statics.getByType = function (type, page, callback) {
     if (!_.isFinite(page)) page = 0;
 
     type = type.trim().toUpperCase();
-    const limit = 10;
 
     this.model(COLLECTION)
         .find({ type })
-        .limit(limit)
+        .skip(page * LIMIT)
+        .limit(LIMIT)
+        .lean()
+        .exec(callback);
+}
+
+MaterialSchema.statics.getByTag = function (tag, page, callback) {
+    if (!_.isString(tag)) return callback('Invalid tag', null);
+    if (!_.isFinite(page)) page = 0;
+
+    this.model(COLLECTION)
+        .find({ tags: tag })
+        .skip(page * LIMIT)
+        .limit(LIMIT)
+        .lean()
+        .exec(callback);
+}
+
+MaterialSchema.statics.search = function (text, page, callback) {
+    if (!_.isString(text)) return callback('Invalid text', null);
+    if (!_.isFinite(page)) page = 0;
+
+    this.model(COLLECTION)
+        .find({
+            $text: {
+                $search: text,
+                $caseSensitive: false,
+            }
+        })
+        .skip(page * LIMIT)
+        .limit(LIMIT)
+        .lean()
         .exec(callback);
 }
 
