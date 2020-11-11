@@ -1,4 +1,5 @@
 const ReaderSchema = require('../models/users/reader');
+const MaterialSchema = require('../models/material');
 const jwtCtrl = require('../auth/jwt');
 const genericCtrl = require('./generic');
 const luxon = require('luxon');
@@ -7,6 +8,7 @@ const _ = require('lodash');
 const {
     success,
     failure,
+    errorResponse,
 } = require('../helpers/response');
 
 const logger = global.logger;
@@ -33,20 +35,11 @@ ctrl.signup = function (req, res, next) {
 
     const secret = process.env.ENCR_SECRET_READER;
     jwtCtrl.createToken({ userId: user._id }, secret, (err, token) => {
-        if (err) {
-            logger.error('token generation failed');
-            return failure(res, 'Internal error', 500);
-        }
+        if (err) return errorResponse(err, res);
 
         user.addSessionId(token.sessionId);
         user.save((err, savedUser) => {
-            if (err) {
-                if (err.driver) return failure(res, 'Email already taken');
-                if (err.message || err.errors) return failure(res, err, 400);
-
-                logger.error(err);
-                return failure(res, 'Internal Error', 500);
-            }
+            if (err) return errorResponse(err, res);
 
             savedUser.auth = undefined;
             const response = {
@@ -54,7 +47,7 @@ ctrl.signup = function (req, res, next) {
                 token: token.token,
             };
 
-            success(res, response);
+            return success(res, response);
         });
     });
 }
@@ -86,11 +79,13 @@ ctrl.getOwnedMaterials = function (req, res, next) { res.end('reader get owned m
 
 ctrl.getFeaturedMaterials = function (req, res, next) { res.end('reader get featured materials'); }
 
-ctrl.getMaterials = function (req, res, next) { res.end('reader get materials'); }
+ctrl.searchMaterials = genericCtrl.searchMaterials;
 
-ctrl.getMaterialDetail = function (req, res, next) { res.end('reader get material detail'); }
+ctrl.getMaterial = genericCtrl.getMaterial;
 
-ctrl.searchForMaterial = function (req, res, next) { res.end('reader search for material'); }
+ctrl.searchProviders = genericCtrl.searchProviders;
+
+ctrl.getProvider = genericCtrl.getProvider;
 
 ctrl.initialData = function (req, res, next) {
     req.user.auth = undefined;
