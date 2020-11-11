@@ -6,6 +6,7 @@ const authMiddleware = require('../middleware/auth');
 
 const multer = require('multer');
 const GridFsStorage = require('multer-gridfs-storage');
+const { toUpper } = require('lodash');
 
 const MATERIAL_SIZE_LIMIT = 100 * 1024 * 1024; // 100 Mb
 const IMG_SIZE_LIMIT = 2 * 1024 * 1024; // 2 Mb
@@ -45,7 +46,7 @@ router.post(
 
 router.post(
     readerBase + '/logout',
-    authMiddleware.authenticateReader,
+    // authMiddleware.authenticateReader,
     readerCtrl.logout);
 
 router.post(
@@ -54,19 +55,39 @@ router.post(
 
 router.get(
     readerBase + '/initialData',
-    authMiddleware.authenticateReader,
+    // authMiddleware.authenticateReader,
     readerCtrl.initialData);
 
 router.put(
     readerBase + '/profile',
-    authMiddleware.authenticateReader,
+    // authMiddleware.authenticateReader,
     readerCtrl.updateProfile);
 
 router.post(
     readerBase + '/upload/image',
-    authMiddleware.authenticateReader,
+    // authMiddleware.authenticateReader,
     imgUpload.single('image'),
     readerCtrl.uploadFile);
+
+router.get(
+    readerBase + '/materials',
+    // authMiddleware.authenticateReader,
+    readerCtrl.searchMaterials);
+
+router.get(
+    readerBase + '/materials/:id',
+    // authMiddleware.authenticateReader,
+    readerCtrl.getMaterial);
+
+router.get(
+    readerBase + '/providers',
+    // authMiddleware.authenticateReader,
+    readerCtrl.searchProviders);
+
+router.get(
+    readerBase + '/providers/:id',
+    // authMiddleware.authenticateReader,
+    readerCtrl.getProvider);
 
 // ------------------------- provider area --------------------------
 const providerBase = '/provider';
@@ -127,12 +148,12 @@ router.get(
 router.get(
     adminBase + '/users/providers',
     // authMiddleware.authenticateAdmin,
-    adminCtrl.getProviders);
+    adminCtrl.searchProviders);
 
 router.get(
-    adminBase + '/users/providers/search',
+    adminBase + '/users/providers/:id',
     // authMiddleware.authenticateAdmin,
-    adminCtrl.searchProviders);
+    adminCtrl.getProvider);
 
 router.post(
     adminBase + '/users/providers',
