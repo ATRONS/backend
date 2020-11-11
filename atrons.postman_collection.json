@@ -112,7 +112,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"legal_name\": \"Alemayehu Gelagay\",\r\n    \"display_name\": \"Alazar Bizen\",\r\n    \"email\": \"alaazaaro@gmail.com\",\r\n    \"password\": \"password\",\r\n    \"avatar_url\": \"this is the url\",\r\n    \"is_company\": false,\r\n    \"author_info\": {\r\n        \"dob\": \"11/09/1965\",\r\n        \"active_from\": \"11/04/2000\"\r\n    },\r\n    \"provides\": \"BOOK\",\r\n    \"[only use if is_company=true and remove author_info]company_info\": {\r\n        \"hq_address\": \"kazanchis\",\r\n        \"founded_date\": \"12/11/1992\"\r\n    },\r\n    \"about\": \"alemayehu wishes to have lived 35 years ago\",\r\n    \"preferences\": {\r\n        \"language\": \"AMHARIC\"\r\n    }\r\n\r\n}",
+									"raw": "{\r\n    \"legal_name\": \"Ethio Magazin P.L.C\",\r\n    \"display_name\": \"Ethio 360\",\r\n    \"email\": \"ethio@gmail.com\",\r\n    \"password\": \"password\",\r\n    \"[NOT]author_info\": {\r\n        \"dob\": \"11/09/1965\",\r\n        \"active_from\": \"11/04/2000\"\r\n    },\r\n    \"company_info\": {\r\n        \"hq_address\": \"kazanchis\",\r\n        \"founded_date\": \"12/11/1992\"\r\n    }\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -183,12 +183,12 @@
 							"response": []
 						},
 						{
-							"name": "get providers",
+							"name": "search providers",
 							"request": {
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{local_url}}/admin/users/providers?type=author&page=0",
+									"raw": "{{local_url}}/admin/users/providers?page=0&display_name=",
 									"host": [
 										"{{local_url}}"
 									],
@@ -200,12 +200,17 @@
 									"query": [
 										{
 											"key": "type",
-											"value": "author",
-											"description": "// author | company"
+											"value": "company",
+											"description": "// author | company",
+											"disabled": true
 										},
 										{
 											"key": "page",
 											"value": "0"
+										},
+										{
+											"key": "display_name",
+											"value": ""
 										}
 									]
 								}
@@ -213,12 +218,12 @@
 							"response": []
 						},
 						{
-							"name": "search providers",
+							"name": "get provider",
 							"request": {
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{local_url}}/admin/users/providers/search?name=al",
+									"raw": "{{local_url}}/admin/users/providers/5f941bcfb5db532f34b9e47e",
 									"host": [
 										"{{local_url}}"
 									],
@@ -226,14 +231,7 @@
 										"admin",
 										"users",
 										"providers",
-										"search"
-									],
-									"query": [
-										{
-											"key": "name",
-											"value": "al",
-											"description": "// other search parameters will be added in the future"
-										}
+										"5f941bcfb5db532f34b9e47e"
 									]
 								}
 							},
@@ -261,13 +259,13 @@
 									}
 								},
 								"url": {
-									"raw": "{{local_url}}/admin/material",
+									"raw": "{{local_url}}/admin/materials",
 									"host": [
 										"{{local_url}}"
 									],
 									"path": [
 										"admin",
-										"material"
+										"materials"
 									]
 								}
 							},
@@ -297,6 +295,103 @@
 										"admin",
 										"upload",
 										"material"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "edit material",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"type\": \"BOOK\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{local_url}}/admin/materials/5f968f1df7b69e3a4ce641be",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"materials",
+										"5f968f1df7b69e3a4ce641be"
+									],
+									"query": [
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete material",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/admin/materials/5f968f1df7b69e3a4ce641be",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"materials",
+										"5f968f1df7b69e3a4ce641be"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "search materials",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/admin/materials?type=BOOK",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"materials"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "BOOK"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get material",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/admin/materials/5f968f1df7b69e3a4ce641be",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"materials",
+										"5f968f1df7b69e3a4ce641be"
 									]
 								}
 							},
@@ -705,6 +800,120 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "get materials",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local_url}}/reader/materials",
+							"host": [
+								"{{local_url}}"
+							],
+							"path": [
+								"reader",
+								"materials"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get providers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local_url}}/reader/providers?page=0&display_name=",
+							"host": [
+								"{{local_url}}"
+							],
+							"path": [
+								"reader",
+								"providers"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "company",
+									"description": "// author | company",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "display_name",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get provider",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local_url}}/reader/providers/5f941bcfb5db532f34b9e47e",
+							"host": [
+								"{{local_url}}"
+							],
+							"path": [
+								"reader",
+								"providers",
+								"5f941bcfb5db532f34b9e47e"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search materials",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local_url}}/reader/materials?type=BOOK",
+							"host": [
+								"{{local_url}}"
+							],
+							"path": [
+								"reader",
+								"materials"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "BOOK"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get material",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local_url}}/reader/materials/5f968f1df7b69e3a4ce641be",
+							"host": [
+								"{{local_url}}"
+							],
+							"path": [
+								"reader",
+								"materials",
+								"5f968f1df7b69e3a4ce641be"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"auth": {
@@ -810,7 +1019,7 @@
 	],
 	"variable": [
 		{
-			"id": "ccaec28d-cb68-4176-bae7-4997054f0b8e",
+			"id": "53ec8e38-c5e9-40ce-bf65-a39322ff7089",
 			"key": "local_url",
 			"value": "http://localhost:5000/api/v1"
 		}
