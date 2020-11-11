@@ -1,5 +1,6 @@
 const AdminSchema = require('../models/users/admin');
 const ProviderSchema = require('../models/users/provider');
+const MaterialSchema = require('../models/material');
 const ReaderSchema = require('../models/users/reader');
 
 const mongoose = require('mongoose');
@@ -10,6 +11,7 @@ const _ = require('lodash');
 const {
     success,
     failure,
+    errorResponse,
 } = require('../helpers/response');
 
 const mongo = mongoose.mongo;
@@ -42,21 +44,14 @@ ctrl.login = function (req, res, next, secret, Schema) {
     const password = req.body.password.trim();
 
     Schema.findOne({ email }, async (err, user) => {
-        if (err) {
-            if (err.errors) return failure(res, err);
-            logger.error(err);
-            return failure(res, 'Internal Error', 500);
-        }
+        if (err) return errorResponse(err, res);
         if (!user) return failure(res, 'Account not found', 404);
 
         const passwordCorrect = user.isPasswordCorrect(password);
         if (!passwordCorrect) return failure(res, 'Password incorrect');
 
         jwtCtrl.createToken({ userId: user._id }, secret, (err, token) => {
-            if (err) {
-                logger.error(err);
-                return failure(res, 'Internal Error', 500);
-            }
+            if (err) return errorResponse(err, res);
 
             user.addSessionId(token.sessionId);
             user.save((err, result) => {
@@ -66,17 +61,13 @@ ctrl.login = function (req, res, next, secret, Schema) {
                 success(res, response);
             });
         });
-
     });
 }
 
 ctrl.logout = async function (req, res, next) {
     req.user.auth.tokens = [];
     req.user.save((err, _) => {
-        if (err) {
-            logger.error(err);
-            return failure(res, 'Internal Error', 500);
-        }
+        if (err) return errorResponse(err, res);
         success(res, { message: 'successfully logged out' });
     });
 }
@@ -155,7 +146,7 @@ ctrl.uploadFile = function (req, res, next) {
         mimetype: req.file.mimetype,
         url: `/media/${req.file.bucketName}/${req.file.id}`,
     };
-    success(res, response);
+    return success(res, response);
 }
 
 ctrl.downloadFile = function (bucketName) {
@@ -181,5 +172,40 @@ ctrl.downloadFile = function (bucketName) {
         });
     }
 }
+
+// ፟-፟------------------------------ provider mgmt commons --------------------------------
+ctrl.searchProviders = function (req, res, next) {
+    const page = isNaN(Number(req.query.page)) ? 0 : Math.abs(Number(req.query.page));
+
+    ProviderSchema.search(req.query, page, function (err, providers) {
+        if (err) return errorResponse(err, res);
+        return success(res, providers);
+    });
+}
+
+ctrl.getProvider = function (req, res, next) {
+    ProviderSchema.getProvider(req.params.id, function (err, provider) {
+        if (err) return errorResponse(err, res);
+        return success(res, provider);
+    });
+}
+
+// ----------------------------- Material mgmt commons -----------------------------
+ctrl.getMaterial = function (req, res, next) {
+    MaterialSchema.getMaterial(req.params.id, function (err, material) {
+        if (err) return errorResponse(err, res);
+        return success(res, material);
+    });
+}
+
+ctrl.searchMaterials = function (req, res, next) {
+    const page = isNaN(Number(req.query.page)) ? 0 : Math.abs(Number(req.query.page));
+
+    MaterialSchema.search(req.query, page, function (err, materials) {
+        if (err) return errorResponse(err, res);
+        return success(res, materials);
+    });
+}
+
 
 module.exports = ctrl;
