@@ -1,4 +1,4 @@
-const { failure, success } = require("../helpers/response");
+const { failure, success, errorResponse } = require("../helpers/response");
 
 const AdminSchema = require('../models/users/admin');
 const ProviderSchema = require('../models/users/provider');
@@ -6,7 +6,6 @@ const MaterialSchema = require('../models/material');
 const genericCtrl = require('./generic');
 const _ = require('lodash');
 const { isValidObjectId } = require("mongoose");
-const material = require("../models/material");
 
 const logger = global.logger;
 
@@ -31,7 +30,7 @@ ctrl.initialData = function (req, res, next) {
         user_info: req.user,
     };
 
-    success(res, response);
+    return success(res, response);
 }
 
 ctrl.createProvider = function (req, res, next) {
@@ -48,41 +47,22 @@ ctrl.createProvider = function (req, res, next) {
     });
 
     provider.save((err, result) => {
-        if (err) {
-            if (err.code) return failure(res, 'Email Already taken');
-            if (err.errors) return failure(res, err);
-
-            logger.error(err);
-            return failure(res, 'Internal Error', 500);
-        }
-
-        success(res, result);
+        if (err) return errorResponse(err, res);
+        return success(res, result);
     });
 
 }
 
 ctrl.updateProviderInfo = function (req, res, next) {
-    if (!isValidObjectId(req.params.id)) return failure(res, 'invalid id');
-
-    ProviderSchema.updateProvider(req.params.id, req.body, function (err, result) {
-        if (err) {
-            if (err.errors) return failure(res, err);
-            logger.error(err);
-            return failure(res, 'Internal Error', 500);
-        }
-        if (!result) return failure(res, 'Provider not found', 404);
-        return success(res, result);
+    ProviderSchema.updateProvider(req.params.id, req.body, function (err, updated) {
+        if (err) return errorResponse(err, res);
+        return success(res, updated);
     });
 }
 
 ctrl.deleteProvider = function (req, res, next) {
-    if (!isValidObjectId(req.params.id)) return failure(res, 'invalid id');
-
     ProviderSchema.softDelete(req.params.id, function (err, result) {
-        if (err) {
-            logger.error(err);
-            return failure(res, 'Internal Error', 500);
-        }
+        if (err) return errorResponse(err, res);
 
         return result.nModified === 1 ?
             success(res, 'Provider deleted') :
@@ -90,39 +70,9 @@ ctrl.deleteProvider = function (req, res, next) {
     });
 }
 
-ctrl.getProviders = function (req, res, next) {
-    if (!_.isString(req.query.type)) return failure(res, 'type query param is required');
-    const type = _.toLower(_.trim(req.query.type));
-    if (type !== 'author' && type !== 'company') return failure(res, 'unknown provider type');
-    const isCompany = type == 'company';
-    const page = isNaN(Number(req.query.page)) ? 0 : Math.abs(Number(req.query.page));
+ctrl.getProvider = genericCtrl.getProvider;
 
-    ProviderSchema.getProviders(isCompany, page, function (err, providers) {
-        if (err) {
-            if (err.errors) return failure(res, err);
-            logger.error(err);
-            return failure(res, 'Internal Error', 500);
-        }
-
-        return success(res, providers);
-    });
-}
-
-ctrl.searchProviders = function (req, res, next) {
-    if (!_.isString(req.query.name)) return failure(res, 'name query param is required');
-    const name = _.toLower(_.trim(req.query.name));
-    const page = isNaN(Number(req.query.page)) ? 0 : Math.abs(Number(req.query.page));
-
-    ProviderSchema.search(name, page, function (err, providers) {
-        if (err) {
-            if (err.errors) return failure(res, err);
-            logger.error(err);
-            return failure(res, 'Internal Error', 500);
-        }
-
-        return success(res, providers);
-    });
-}
+ctrl.searchProviders = genericCtrl.searchProviders;
 
 ctrl.uploadFile = genericCtrl.uploadFile;
 
@@ -146,40 +96,21 @@ ctrl.createMaterial = function (req, res, next) {
     });
 
     material.save((err, result) => {
-        if (err) {
-            if (err.errors) return failure(res, err);
-
-            logger.error(err);
-            return failure(res, 'Internal Error', 500);
-        }
-
-        success(res, result);
+        if (err) return errorResponse(err, res);
+        return success(res, result);
     });
 }
 
 ctrl.updateMaterial = function (req, res, next) {
-    if (!isValidObjectId(req.params.id)) return failure(res, 'Invalid id');
-
-    MaterialSchema.updateMaterial(req.params.id, req.body, function (err, material) {
-        if (err) {
-            if (err.errors) return failure(res, err);
-            logger.error(err);
-            return failure(res, 'Internal Error', 500);
-        }
-
-        if (!material) return failure(res, 'Material not found', 404);
-        return success(res, material);
+    MaterialSchema.updateMaterial(req.params.id, req.body, function (err, updated) {
+        if (err) return errorResponse(err, res);
+        return success(res, updated);
     });
 }
 
 ctrl.deleteMaterial = function (req, res, next) {
-    if (!isValidObjectId(req.params.id)) return failure(res, 'Invalid id');
-
     MaterialSchema.softDelete(req.params.id, function (err, result) {
-        if (err) {
-            logger.error(err);
-            return failure(res, 'Internal Error', 500);
-        }
+        if (err) return errorResponse(err, res);
 
         return result.nModified === 1 ?
             success(res, 'Material deleted') :
@@ -187,32 +118,9 @@ ctrl.deleteMaterial = function (req, res, next) {
     });
 }
 
-ctrl.getMaterial = function (req, res, next) {
-    if (!isValidObjectId(req.params.id)) return failure(res, 'Invalid id');
+ctrl.getMaterial = genericCtrl.getMaterial;
 
-    MaterialSchema.getMaterial(req.params.id, function (err, material) {
-        if (err) {
-            logger.error(err);
-            return failure(res, 'Internal Error', 500);
-        }
-
-        return success(res, material);
-    });
-}
-
-ctrl.searchMaterials = function (req, res, next) {
-    const page = isNaN(Number(req.query.page)) ? 0 : Math.abs(Number(req.query.page));
-
-    MaterialSchema.search(req.query, page, function (err, materials) {
-        if (err) {
-            if (err.errors) return failure(res, err);
-            logger.error(err);
-            return failure(res, 'Internal Error', 500);
-        }
-
-        return success(res, materials);
-    });
-}
+ctrl.searchMaterials = genericCtrl.searchMaterials;
 
 // ---------------------------------------------------------
 ctrl.addAdmin = function (req, res, next) { res.end('add admin'); }
