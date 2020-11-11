@@ -82,6 +82,8 @@ MaterialSchema.pre('save', function (next) {
 });
 
 MaterialSchema.statics.getMaterial = function (oId, callback) {
+    if (!mongoose.isValidObjectId(oId)) return callback({ custom: 'Invalid Id', status: 400 });
+
     this.model(COLLECTION)
         .findOne({ _id: oId })
         .populate('provider', '+display_name +id')
@@ -90,11 +92,13 @@ MaterialSchema.statics.getMaterial = function (oId, callback) {
 }
 
 MaterialSchema.statics.updateMaterial = function (oId, update, callback) {
+    if (!mongoose.isValidObjectId(oId)) return callback({ custom: 'Invalid Id', status: 400 });
+
     this.model(COLLECTION)
         .findOne({ _id: oId })
         .exec(function (err, material) {
             if (err) return callback(err);
-            if (!material) return callback(null, null);
+            if (!material) return callback({ custom: 'Material not found', status: 404 });
 
             material.type = update.type || material.type;
             material.title = update.title || material.title;
@@ -125,7 +129,6 @@ MaterialSchema.statics.search = function (filters, page, callback) {
     }
     if (filters.type) query.type = filters.type.trim().toUpperCase();
     query.deleted = false;
-    console.log(query);
 
     this.model(COLLECTION)
         .find(query)
@@ -136,6 +139,8 @@ MaterialSchema.statics.search = function (filters, page, callback) {
 }
 
 MaterialSchema.statics.softDelete = function (oId, callback) {
+    if (!mongoose.isValidObjectId(oId)) return callback({ custom: 'Invalid Id', status: 400 });
+
     this.model(COLLECTION)
         .updateOne({ _id: oId }, { $set: { deleted: true } })
         .exec(callback);

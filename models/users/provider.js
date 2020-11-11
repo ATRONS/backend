@@ -9,6 +9,7 @@ const SALT_FACTOR = 10;
 const LIMIT = 10;
 
 const AuthSchema = require('./sub/auth');
+const { filter } = require('lodash');
 
 const AuthorSchema = mongoose.Schema({
     dob: { type: Date, required: true },
@@ -94,39 +95,48 @@ ProviderSchema.methods.addSessionId = function (sessionId) {
 }
 
 // --------------------------------------------------------------------------
+ProviderSchema.statics.getProvider = function (oId, callback) {
+    if (!mongoose.isValidObjectId(oId)) return callback({ custom: 'Invalid Id', status: 400 });
 
-ProviderSchema.statics.getProviders = function (isCompany, page, callback) {
-    if (!_.isFinite(page)) page = 0;
-    this.model(COLLECTION).
-        find({ is_company: isCompany, 'auth.deleted': false }).
-        select('-auth -__v').
-        skip(page * LIMIT).
-        limit(LIMIT).
-        lean().
-        exec(callback);
+    this.model(COLLECTION)
+        .findOne({ _id: oId })
+        .select('-auth -__v')
+        .lean()
+        .exec(callback);
 }
 
-ProviderSchema.statics.searchProvidersByName = function (name, page, callback) {
-    if (!_.isFinite(page)) page = 0;
+ProviderSchema.statics.search = function (filters, page, callback) {
+    const query = {};
+    if (filters.display_name) {
+        query.display_name = RegExp(`^${filters.display_name}`, 'i');
+    }
+    if (filters.type) {
+        const type = _.toLower(_.trim(filters.type));
+        if (type !== 'author' && type !== 'company') {
+            return callback({ custom: 'unknown provider type', status: 400 });
+        }
+        query.is_company = type == 'company';
+    }
+    query['auth.deleted'] = false;
 
-    const searchRegex = RegExp(`^${name}`, 'i');
-
-    this.model(COLLECTION).
-        find({ display_name: searchRegex, 'auth.deleted': false }).
-        select('-auth -__v').
-        skip(page * LIMIT).
-        limit(LIMIT).
-        lean().
-        exec(callback);
+    this.model(COLLECTION)
+        .find(query)
+        .select('-auth -__v')
+        .skip(page * LIMIT)
+        .limit(LIMIT)
+        .lean()
+        .exec(callback);
 }
 
-ProviderSchema.statics.updateProvider = function (id, update, callback) {
+ProviderSchema.statics.updateProvider = function (oId, update, callback) {
+    if (!mongoose.isValidObjectId(oId)) return callback({ custom: 'Invalid id', status: 400 });
+
     this.model(COLLECTION).
-        findOne({ _id: id }).
+        findOne({ _id: oId }).
         select('-auth -__v').
         exec(function (err, provider) {
             if (err) return callback(err);
-            if (!provider) return callback(null, null);
+            if (!provider) return callback({ custom: 'Provider not found', status: 404 });
 
             provider.display_name = update.display_name || provider.display_name;
             provider.avatar_url = update.avatar_url || provider.avatar_url;
@@ -140,6 +150,8 @@ ProviderSchema.statics.updateProvider = function (id, update, callback) {
 }
 
 ProviderSchema.statics.softDelete = function (id, callback) {
+    if (!mongoose.isValidObjectId(oId)) return callback({ custom: 'Invalid Id', status: 400 });
+
     this.model(COLLECTION).
         updateOne({ _id: id }, { $set: { 'auth.deleted': true } }).
         exec(callback);
