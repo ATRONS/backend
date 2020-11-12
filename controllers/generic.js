@@ -187,6 +187,7 @@ ctrl.searchProviders = function (req, res, next) {
 ctrl.getProvider = function (req, res, next) {
     ProviderSchema.getProvider(req.params.id, function (err, provider) {
         if (err) return errorResponse(err, res);
+        if (!provider) return failure(res, 'Provider not found', 404);
         return success(res, provider);
     });
 }
@@ -195,6 +196,7 @@ ctrl.getProvider = function (req, res, next) {
 ctrl.getMaterial = function (req, res, next) {
     MaterialSchema.getMaterial(req.params.id, function (err, material) {
         if (err) return errorResponse(err, res);
+        if (!material) return failure(res, 'Material not found', 404);
         return success(res, material);
     });
 }
@@ -209,7 +211,6 @@ ctrl.searchMaterials = function (req, res, next) {
 }
 // ---------------------------------------------------------------------------------
 ctrl.getAllTags = function (req, res, next) {
-    console.log("in here");
     TagSchema.getAllTags(function (err, tags) {
         if (err) return errorResponse(err, res);
         return success(res, tags);
