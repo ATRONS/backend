@@ -122,6 +122,7 @@ ctrl.getMaterial = genericCtrl.getMaterial;
 
 ctrl.searchMaterials = genericCtrl.searchMaterials;
 
+ctrl.getAllTags = genericCtrl.getAllTags;
 // ---------------------------------------------------------
 ctrl.addAdmin = function (req, res, next) { res.end('add admin'); }
 

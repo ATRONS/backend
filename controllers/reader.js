@@ -87,6 +87,8 @@ ctrl.searchProviders = genericCtrl.searchProviders;
 
 ctrl.getProvider = genericCtrl.getProvider;
 
+ctrl.getAllTags = genericCtrl.getAllTags;
+
 ctrl.initialData = function (req, res, next) {
     req.user.auth = undefined;
 

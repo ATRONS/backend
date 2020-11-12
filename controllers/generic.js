@@ -2,6 +2,7 @@ const AdminSchema = require('../models/users/admin');
 const ProviderSchema = require('../models/users/provider');
 const MaterialSchema = require('../models/material');
 const ReaderSchema = require('../models/users/reader');
+const TagSchema = require('../models/tag');
 
 const mongoose = require('mongoose');
 const jwtCtrl = require('../auth/jwt');
@@ -173,7 +174,7 @@ ctrl.downloadFile = function (bucketName) {
     }
 }
 
-// ፟-፟------------------------------ provider mgmt commons --------------------------------
+// ፟-፟------------------------------ provider mgmt commons ----------------------------
 ctrl.searchProviders = function (req, res, next) {
     const page = isNaN(Number(req.query.page)) ? 0 : Math.abs(Number(req.query.page));
 
@@ -206,6 +207,13 @@ ctrl.searchMaterials = function (req, res, next) {
         return success(res, materials);
     });
 }
-
+// ---------------------------------------------------------------------------------
+ctrl.getAllTags = function (req, res, next) {
+    console.log("in here");
+    TagSchema.getAllTags(function (err, tags) {
+        if (err) return errorResponse(err, res);
+        return success(res, tags);
+    });
+}
 
 module.exports = ctrl;
