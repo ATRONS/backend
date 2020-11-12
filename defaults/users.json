@@ -1,0 +1,9 @@
+{
+    "admin": {
+        "firstname": "Hiskel",
+        "lastname": "Kelemework",
+        "email": "hiskel@gmail.com",
+        "password": "12345678",
+        "avatar_url": "/media/default_admin.png"
+    }
+}

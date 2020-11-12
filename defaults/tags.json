@@ -1,0 +1,67 @@
+[
+    {
+        "name": "fiction",
+        "options": [
+            {
+                "lang": "english",
+                "value": "fiction"
+            },
+            {
+                "lang": "amharic",
+                "value": "ልቦለድ"
+            }
+        ]
+    },
+    {
+        "name": "history",
+        "options": [
+            {
+                "lang": "english",
+                "value": "history"
+            },
+            {
+                "lang": "amharic",
+                "value": "ታሪክ"
+            }
+        ]
+    },
+    {
+        "name": "thriller",
+        "options": [
+            {
+                "lang": "english",
+                "value": "thriller"
+            },
+            {
+                "lang": "amharic",
+                "value": "ልብ አንጠልጣይ"
+            }
+        ]
+    },
+    {
+        "name": "science_fiction",
+        "options": [
+            {
+                "lang": "english",
+                "value": "science fiction"
+            },
+            {
+                "lang": "amharic",
+                "value": "ሳይንሳዊ ልቦለድ"
+            }
+        ]
+    },
+    {
+        "name": "biography",
+        "options": [
+            {
+                "lang": "english",
+                "value": "biography"
+            },
+            {
+                "lang": "amharic",
+                "value": "ግለ-ታሪክ"
+            }
+        ]
+    }
+]
