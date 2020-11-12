@@ -38,7 +38,12 @@ const MaterialSchema = mongoose.Schema({
         required: function () { return this.type === 'BOOK' }
     },
     review: { type: String, trim: true },
-    tags: { type: [mongoose.Types.ObjectId], default: [], ref: 'tags', index: true },
+    tags: [{
+        type: mongoose.Schema.ObjectId,
+        ref: 'tags',
+        required: true,
+        index: true
+    }],
 
     pages: { type: Number, required: true, min: 1 },
     edition: { type: Number, required: true, min: 1 },
@@ -86,8 +91,8 @@ MaterialSchema.statics.getMaterial = function (oId, callback) {
 
     this.model(COLLECTION)
         .findOne({ _id: oId })
-        // .populate('tags')
-        // .populate('provider')
+        .populate('tags', { __v: 0 })
+        .populate("provider", { display_name: 1 })
         .lean()
         .exec(callback);
 }
