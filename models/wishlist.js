@@ -4,7 +4,7 @@ const luxon = require('luxon');
 const COLLECTION = 'wishlists';
 
 const WishListSchema = mongoose.Schema({
-    user: { type: mongoose.Types.ObjectId, required: true, ref: 'users' },
+    user: { type: mongoose.Types.ObjectId, required: true, ref: 'users', index: true },
     material: { type: mongoose.Types.ObjectId, required: true, ref: 'materials' },
 }, {
     timeStamp: {
