@@ -75,6 +75,11 @@ router.get(
     readerCtrl.searchMaterials);
 
 router.get(
+    readerBase + '/materials/tags',
+    // authMiddleware.authenticateReader,
+    readerCtrl.getAllTags);
+
+router.get(
     readerBase + '/materials/:id',
     // authMiddleware.authenticateReader,
     readerCtrl.getMaterial);
@@ -97,7 +102,7 @@ router.post(
 
 router.post(
     providerBase + '/logout',
-    authMiddleware.authenticateProvider,
+    // authMiddleware.authenticateProvider,
     providerCtrl.logout);
 
 router.post(
@@ -106,17 +111,17 @@ router.post(
 
 router.get(
     providerBase + '/initialData',
-    authMiddleware.authenticateProvider,
+    // authMiddleware.authenticateProvider,
     providerCtrl.initialData);
 
 router.put(
     providerBase + '/profile',
-    authMiddleware.authenticateProvider,
+    // authMiddleware.authenticateProvider,
     providerCtrl.updateProfile);
 
 router.post(
     providerBase + '/upload/image',
-    authMiddleware.authenticateProvider,
+    // authMiddleware.authenticateProvider,
     imgUpload.single('image'),
     providerCtrl.uploadFile);
 
@@ -128,7 +133,7 @@ router.post(
 
 router.post(
     adminBase + '/logout',
-    authMiddleware.authenticateAdmin,
+    // authMiddleware.authenticateAdmin,
     adminCtrl.logout);
 
 router.post(
@@ -137,12 +142,12 @@ router.post(
 
 router.put(
     adminBase + '/profile',
-    authMiddleware.authenticateAdmin,
+    // authMiddleware.authenticateAdmin,
     adminCtrl.updateProfile);
 
 router.get(
     adminBase + '/initialData',
-    authMiddleware.authenticateAdmin,
+    // authMiddleware.authenticateAdmin,
     adminCtrl.initialData);
 
 router.get(
@@ -179,6 +184,11 @@ router.get(
     adminBase + '/materials',
     // authMiddleware.authenticateAdmin,
     adminCtrl.searchMaterials);
+
+router.get(
+    adminBase + '/materials/tags',
+    // authMiddleware.authenticateAdmin,
+    adminCtrl.getAllTags);
 
 router.get(
     adminBase + '/materials/:id',
