@@ -251,7 +251,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"type\": \"BOOK\",\r\n    \"title\": \"ሐሰተኛው\",\r\n    \"subtitle\": \"በእምነት ስም\",\r\n    \"file\": {\r\n        \"id\": \"5f9687779369b33188a24906\",\r\n        \"size\": 4004,\r\n        \"contentType\": \"image/png\",\r\n        \"mimetype\": \"image/png\",\r\n        \"url\": \"/media/materials/5f9687779369b33188a24906\"\r\n    },\r\n    \"cover_img_url\": \"/media/images/someidhere\",\r\n    \"published_date\": \"11/12/2013\",\r\n    \"display_date\": \"ግንቦት 2005\",\r\n    \"ISBN\": \"OPTIONAL\",\r\n    \"synopsis\": \"REQUIRED FOR TYPE BOOK, NOT ALLOWED FOR OTHER TYPES\",\r\n    \"review\": \"OPTIONAL\",\r\n    \"tags\": [\"ረጅም ልቦለድ\", \"ጦማራዊ\", \"ድህረ ዘመናዊ\"],\r\n    \"pages\": 302,\r\n    \"edition\": 1,\r\n    \"provider\": \"5f9687779369b33188a24906\",\r\n    \"price\": {\r\n        \"free\": false,\r\n        \"selling\": 15,\r\n        \"rent\": {\r\n            \"value\": 5,\r\n            \"per\": 1\r\n        }\r\n    }\r\n}",
+									"raw": "{\r\n    \"type\": \"BOOK\",\r\n    \"title\": \"ሐሰተኛው\",\r\n    \"subtitle\": \"በእምነት ስም\",\r\n    \"file\": {\r\n        \"id\": \"5f9687779369b33188a24906\",\r\n        \"size\": 4004,\r\n        \"contentType\": \"image/png\",\r\n        \"mimetype\": \"image/png\",\r\n        \"url\": \"/media/materials/5f9687779369b33188a24906\"\r\n    },\r\n    \"cover_img_url\": \"/media/images/someidhere\",\r\n    \"published_date\": \"11/12/2013\",\r\n    \"display_date\": \"ግንቦት 2005\",\r\n    \"ISBN\": \"OPTIONAL\",\r\n    \"synopsis\": \"REQUIRED FOR TYPE BOOK, NOT ALLOWED FOR OTHER TYPES\",\r\n    \"review\": \"OPTIONAL\",\r\n    \"tags\": [\"5face2c3e90aba294074feed\"],\r\n    \"pages\": 302,\r\n    \"edition\": 1,\r\n    \"provider\": \"5f9687779369b33188a24906\",\r\n    \"price\": {\r\n        \"free\": false,\r\n        \"selling\": 15,\r\n        \"rent\": {\r\n            \"value\": 5,\r\n            \"per\": 1\r\n        }\r\n    }\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -384,14 +384,33 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{local_url}}/admin/materials/5f968f1df7b69e3a4ce641be",
+									"raw": "{{local_url}}/admin/materials/5face531ba1c443120354242",
 									"host": [
 										"{{local_url}}"
 									],
 									"path": [
 										"admin",
 										"materials",
-										"5f968f1df7b69e3a4ce641be"
+										"5face531ba1c443120354242"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get all tags",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/admin/materials/tags",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"materials",
+										"tags"
 									]
 								}
 							},
@@ -914,6 +933,25 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "get all tags",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local_url}}/reader/materials/tags",
+							"host": [
+								"{{local_url}}"
+							],
+							"path": [
+								"reader",
+								"materials",
+								"tags"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"auth": {
@@ -1019,7 +1057,7 @@
 	],
 	"variable": [
 		{
-			"id": "53ec8e38-c5e9-40ce-bf65-a39322ff7089",
+			"id": "d87faf99-ee8b-449d-b4c1-e33d1cf6d235",
 			"key": "local_url",
 			"value": "http://localhost:5000/api/v1"
 		}
