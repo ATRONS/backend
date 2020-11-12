@@ -25,13 +25,15 @@ global.logger = logger;
 global.env = process.env.NODE_ENV || 'development';
 
 const db = require('./database/db');
+const populate = require('./defaults/populate');
 
 async.series([
     function (callback) {
         const url = process.env.MONGO_URL;
         db.init(url, callback);
     },
-    db.createDefaultAdmin,
+    populate.createDefaultAdmin,
+    populate.populateTags,
 ], function (err, results) {
     if (err) return logger.error(err);
     startServer();
