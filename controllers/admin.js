@@ -95,9 +95,16 @@ ctrl.createMaterial = function (req, res, next) {
         price: req.body.price,
     });
 
-    material.save((err, result) => {
+    material.save((err, material) => {
         if (err) return errorResponse(err, res);
-        return success(res, result);
+        material
+            .populate('tags')
+            .populate('provider', { display_name: 1 })
+            .execPopulate((err, doc) => {
+                if (err) return errorResponse(err);
+                return success(res, doc);
+            });
+        // return success(res, material);
     });
 }
 
