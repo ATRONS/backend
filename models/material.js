@@ -28,7 +28,7 @@ const MaterialSchema = mongoose.Schema({
     cover_img_url: { type: String, required: true },
 
     published_date: { type: Date, required: true },
-    display_date: { type: String, required: true, trim: true },
+    display_date: { type: String, trim: true },
 
     // Book related fields
     ISBN: { type: String, trim: true, sparse: true },
@@ -38,12 +38,10 @@ const MaterialSchema = mongoose.Schema({
         required: function () { return this.type === 'BOOK' }
     },
     review: { type: String, trim: true },
-    tags: [{
-        type: mongoose.Schema.ObjectId,
-        ref: 'tags',
-        required: true,
-        index: true
-    }],
+    tags: {
+        type: [{ type: mongoose.Schema.ObjectId, ref: 'tags' }],
+        index: true,
+    },
 
     pages: { type: Number, required: true, min: 1 },
     edition: { type: Number, required: true, min: 1 },
