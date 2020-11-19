@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const jwtCtrl = require('../auth/jwt');
 const luxon = require('luxon');
 const emailer = require('../emailer/emailer');
+const asyncLib = require('async');
 const _ = require('lodash');
 const {
     success,
@@ -194,10 +195,17 @@ ctrl.getProvider = function (req, res, next) {
 
 // ----------------------------- Material mgmt commons -----------------------------
 ctrl.getMaterial = function (req, res, next) {
-    MaterialSchema.getMaterial(req.params.id, function (err, material) {
+    asyncLib.parallel({
+        material: function (callback) {
+            MaterialSchema.getMaterial(req.params.id, function (err, material) {
+                if (err) return callback(err);
+                if (!material) return callback('not found');
+                return callback(null, material);
+            });
+        }
+    }, function (err, results) {
         if (err) return errorResponse(err, res);
-        if (!material) return failure(res, 'Material not found', 404);
-        return success(res, material);
+        return success(res, results);
     });
 }
 
