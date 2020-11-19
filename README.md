@@ -9,15 +9,11 @@ company_info required if is_company == true
 returns the created provider document.
 
 ### GET /api/v1/admin/users/providers
-required query param: type [author/company]
+query params: display_name, type [author/company]
 optional query param: page [default 0]
-returns a list of providers
 
-### GET /api/v1/admin/users/providers/search
-required query param: name
-optional query param: page [default 0]
-other query params will be added in the future
-retrieves list of providers that start with the name
+### GET /api/v1/admin/users/providers/:id
+returns a provider with the matching id
 
 ### PUT /api/v1/admin/users/providers/:id
 accepts all model fields except the unchanging ones (auth related, legal_name etc..)
@@ -27,7 +23,7 @@ returns the updated document
 performs a softdelete on a provider
 returns a success or failure message
 
-### POST /api/v1/admin/material
+### POST /api/v1/admin/materials
 creates a material
 returns the created material document.
 
