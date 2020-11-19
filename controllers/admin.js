@@ -3,9 +3,10 @@ const { failure, success, errorResponse } = require("../helpers/response");
 const AdminSchema = require('../models/users/admin');
 const ProviderSchema = require('../models/users/provider');
 const MaterialSchema = require('../models/material');
+const TransactionSchema = require('../models/transaction');
 const genericCtrl = require('./generic');
+const asyncLib = require('async');
 const _ = require('lodash');
-const { isValidObjectId } = require("mongoose");
 
 const logger = global.logger;
 
@@ -71,6 +72,33 @@ ctrl.deleteProvider = function (req, res, next) {
 }
 
 ctrl.getProvider = genericCtrl.getProvider;
+
+ctrl.getProviderReport = function (req, res, next) {
+    asyncLib.parallel({
+        provider: function (callback) {
+            ProviderSchema.getProvider(req.params.id, function (err, provider) {
+                if (err) return callback(err);
+                if (!provider) return callback({ custom: 'Provider not found', status: 404 });
+                return callback(null, provider);
+            });
+        },
+        bestSellers: function (callback) {
+            TransactionSchema.getBestSellersByProvider(req.params.id, function (err, best) {
+                if (err) return callback(err);
+                return callback(null, best);
+            });
+        },
+        sells: function (callback) {
+            TransactionSchema.getSellsReportByProvider(req.params.id, 10, function (err, sells) {
+                if (err) return callback(err);
+                return callback(null, sells);
+            });
+        }
+    }, function (err, results) {
+        if (err) return errorResponse(err, res);
+        return success(res, results);
+    });
+}
 
 ctrl.searchProviders = genericCtrl.searchProviders;
 
