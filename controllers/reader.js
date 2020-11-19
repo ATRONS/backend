@@ -1,8 +1,11 @@
 const ReaderSchema = require('../models/users/reader');
 const MaterialSchema = require('../models/material');
+const TagSchema = require('../models/tag');
+const TransactionSchema = require('../models/transaction');
 const jwtCtrl = require('../auth/jwt');
 const genericCtrl = require('./generic');
 const luxon = require('luxon');
+const asyncLib = require('async');
 const emailer = require('../emailer/emailer');
 const _ = require('lodash');
 const {
@@ -10,6 +13,9 @@ const {
     failure,
     errorResponse,
 } = require('../helpers/response');
+const tag = require('../models/tag');
+const { result } = require('lodash');
+const response = require('../helpers/response');
 
 const logger = global.logger;
 
@@ -83,6 +89,24 @@ ctrl.searchMaterials = genericCtrl.searchMaterials;
 
 ctrl.getMaterial = genericCtrl.getMaterial;
 
+ctrl.purchaseMaterial = function (req, res, next) {
+    MaterialSchema.getMaterial(req.params.id, (err, material) => {
+        if (err) return errorResponse(err, res);
+        if (!material) return failure(res, 'Material not found', 404);
+
+        const transaction = TransactionSchema({
+            provider: req.params.id,
+            material: material._id,
+            amount: material.price.selling,
+        });
+
+        transaction.save((err, saved) => {
+            if (err) return errorResponse(err, res);
+            return success(res, saved);
+        });
+    });
+}
+
 ctrl.searchProviders = genericCtrl.searchProviders;
 
 ctrl.getProvider = genericCtrl.getProvider;
@@ -90,13 +114,40 @@ ctrl.getProvider = genericCtrl.getProvider;
 ctrl.getAllTags = genericCtrl.getAllTags;
 
 ctrl.initialData = function (req, res, next) {
-    req.user.auth = undefined;
+    asyncLib.parallel({
+        generes: function (callback) {
+            TagSchema.getAllTags(function (err, tags) {
+                if (err) return callback(err, null);
+                return callback(null, tags);
+            });
+        },
+        popular: function (callback) {
+            MaterialSchema.search(req.query, 0, function (err, materials) {
+                if (err) return callback(err, null);
+                return callback(null, materials);
+            });
+        }
+    }, function (err, results) {
+        if (err) return errorResponse(err, res);
 
-    const response = {
-        user_info: req.user,
-    };
+        const generes = results.generes;
+        const popular = {};
 
-    success(res, response);
+        generes.forEach((genere, index) => {
+            if (index > 3) return;
+            popular[genere._id.toHexString()] = results.popular;
+        });
+
+        const response = { generes, popular };
+        return success(res, response);
+    });
+}
+
+ctrl.getRepMaterials = function (req, res, next) {
+    MaterialSchema.getMaterialsInEachTag(null, function (err, result) {
+        if (err) return errorResponse(err, res);
+        return success(res, result);
+    });
 }
 
 ctrl.uploadFile = genericCtrl.uploadFile;
