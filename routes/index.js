@@ -84,6 +84,11 @@ router.get(
     // authMiddleware.authenticateReader,
     readerCtrl.getMaterial);
 
+router.post(
+    readerBase + '/materials/:id/purchase',
+    // authMiddleware.authenticateReader,
+    readerCtrl.purchaseMaterial);
+
 router.get(
     readerBase + '/providers',
     // authMiddleware.authenticateReader,
@@ -159,6 +164,11 @@ router.get(
     adminBase + '/users/providers/:id',
     // authMiddleware.authenticateAdmin,
     adminCtrl.getProvider);
+
+router.get(
+    adminBase + '/users/providers/:id/report',
+    // authMiddleware.authenticateAdmin,
+    adminCtrl.getProviderReport);
 
 router.post(
     adminBase + '/users/providers',
