@@ -22,7 +22,7 @@ const ReaderSchema = mongoose.Schema({
         language: { type: String, required: true, enum: ['ENGLISH', 'AMHARIC'] },
     },
 }, {
-    timeStamp: {
+    timestamps: {
         createdAt: 'created_at',
         updatedAt: 'updated_at',
         currentTime: () => luxon.DateTime.utc().valueOf()

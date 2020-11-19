@@ -22,7 +22,7 @@ const MaterialSchema = mongoose.Schema({
         index: true,
     },
     title: { type: String, required: true, trim: true, },
-    subtitle: { type: String, trim: true },
+    subtitle: { type: String, default: "", trim: true },
 
     file: { type: FileSchema, required: true },
     cover_img_url: { type: String, required: true },
@@ -69,7 +69,7 @@ const MaterialSchema = mongoose.Schema({
 
     deleted: { type: Boolean, default: false },
 }, {
-    timeStamp: {
+    timestamps: {
         createdAt: 'created_at',
         updatedAt: 'updated_at',
         currentTime: () => luxon.DateTime.utc().valueOf()
@@ -89,6 +89,7 @@ MaterialSchema.statics.getMaterial = function (oId, callback) {
 
     this.model(COLLECTION)
         .findOne({ _id: oId })
+        .select('-__v -deleted')
         .populate('tags', { __v: 0 })
         .populate("provider", { display_name: 1 })
         .lean()
@@ -136,10 +137,21 @@ MaterialSchema.statics.search = function (filters, page, callback) {
 
     this.model(COLLECTION)
         .find(query)
+        .select('title subtitle cover_img_url')
         .skip(page * LIMIT)
         .limit(LIMIT)
         .lean()
         .exec(callback);
+}
+
+MaterialSchema.statics.getMaterialsInEachTag = function (tagIds, callback) {
+    this.model(COLLECTION).aggregate([
+        { $match: { type: "BOOK" }, },
+        { $unwind: "$tags" },
+        { $project: { title: 1, subtitle: 1, tags: 1 } },
+        // { $group: { _id: "$tags" }, },
+        // { $limit: 3 },
+    ]).exec(callback);
 }
 
 MaterialSchema.statics.softDelete = function (oId, callback) {

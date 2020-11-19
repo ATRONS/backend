@@ -18,7 +18,7 @@ const AdminSchema = mongoose.Schema({
     // role: { type: mongoose.Schema.Types.ObjectId, ref: 'roles', required: true },
     auth: { type: AuthSchema, required: true },
 }, {
-    timeStamp: {
+    timestamps: {
         createdAt: 'created_at',
         updatedAt: 'updated_at',
         currentTime: () => luxon.DateTime.utc().valueOf()

@@ -56,7 +56,7 @@ const ProviderSchema = mongoose.Schema({
         language: { type: String, enum: ['ENGLISH', 'AMHARIC'] },
     },
 }, {
-    timeStamp: {
+    timestamps: {
         createdAt: 'created_at',
         updatedAt: 'updated_at',
         currentTime: () => luxon.DateTime.utc().valueOf()
@@ -121,7 +121,7 @@ ProviderSchema.statics.search = function (filters, page, callback) {
 
     this.model(COLLECTION)
         .find(query)
-        .select('-auth -__v')
+        .select('display_name avatar_url')
         .skip(page * LIMIT)
         .limit(LIMIT)
         .lean()
