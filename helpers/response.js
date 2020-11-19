@@ -10,7 +10,7 @@ response.failure = function (res, message, status = 400) {
 }
 
 response.errorResponse = function (err, res) {
-    if (err.code) return failure(res, 'Email Already taken');
+    if (err.code) return response.failure(res, 'Duplicate key error');
     if (err.errors) return response.failure(res, err);
     if (err.custom) return response.failure(res, err.custom, err.status);
     logger.error(err);
