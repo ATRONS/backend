@@ -1,5 +1,4 @@
 const { failure, success, errorResponse } = require("../helpers/response");
-
 const AdminSchema = require('../models/users/admin');
 const ProviderSchema = require('../models/users/provider');
 const MaterialSchema = require('../models/material');
@@ -7,8 +6,7 @@ const TransactionSchema = require('../models/transaction');
 const genericCtrl = require('./generic');
 const asyncLib = require('async');
 const _ = require('lodash');
-const provider = require("../models/users/provider");
-const { result } = require("lodash");
+const ObjectId = require("mongoose").Types.ObjectId;
 
 const logger = global.logger;
 
@@ -85,23 +83,37 @@ ctrl.getProvider = function (req, res, next) {
             });
         },
         bestSellers: function (callback) {
-            TransactionSchema.getBestSellersByProvider(req.params.id, function (err, best) {
-                if (err) return callback(err);
-                return callback(null, best);
-            });
+            TransactionSchema.getBestSellersByProvider(req.params.id, callback);
         },
         sellsReport: function (callback) {
             const ofLastXDays = 7;
-            TransactionSchema.getSellsReportByProvider(req.params.id, ofLastXDays, function (err, sells) {
-                if (err) return callback(err);
-                return callback(null, sells);
-            });
+            TransactionSchema.getSellsReportByProvider(req.params.id, ofLastXDays, callback);
+        },
+        totalMaterialsCount: function (callback) {
+            const objIds = [ObjectId(req.params.id)];
+            MaterialSchema.countMaterialsForProviders(objIds, callback);
+        },
+        totalSells: function (callback) {
+            TransactionSchema.getTotalSellsByProvider(req.params.id, callback);
         }
     }, function (err, results) {
         if (err) return errorResponse(err, res);
         const response = results.provider;
         response.best_sellers = results.bestSellers;
         response.sells_report = results.sellsReport;
+
+        const sells_info = results.totalSells.length ?
+            results.totalSells[0] :
+            {
+                sells_amount: 0,
+                sells_count: 0
+            };
+        response.total_sells_amount = sells_info.sells_amount;
+        response.total_sells_count = sells_info.sells_count;
+        response.total_materials_count = results.totalMaterialsCount.length ?
+            results.totalMaterialsCount[0].count : 0;
+        response.available_balance = 100;
+
         return success(res, response);
     });
 }
