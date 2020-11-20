@@ -146,6 +146,13 @@ MaterialSchema.statics.search = function (filters, page, callback) {
         .exec(callback);
 }
 
+MaterialSchema.statics.countMaterialsForProviders = function (ids, callback) {
+    this.model(COLLECTION).aggregate([
+        { $match: { provider: { $in: ids } } },
+        { $group: { _id: "$provider", count: { $sum: 1 } } }
+    ]).exec(callback);
+}
+
 MaterialSchema.statics.getMaterialsInEachTag = function (tagIds, callback) {
     this.model(COLLECTION).aggregate([
         { $match: { type: "BOOK" }, },
