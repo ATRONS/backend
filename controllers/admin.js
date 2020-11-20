@@ -42,6 +42,7 @@ ctrl.createProvider = function (req, res, next) {
         display_name: req.body.display_name,
         email: req.body.email,
         phone: req.body.phone,
+        about: req.body.about,
         auth: {
             password: req.body.password,
         },
@@ -74,8 +75,6 @@ ctrl.deleteProvider = function (req, res, next) {
     });
 }
 
-// ctrl.getProvider = genericCtrl.getProvider;
-
 ctrl.getProvider = function (req, res, next) {
     asyncLib.parallel({
         provider: function (callback) {
@@ -107,11 +106,24 @@ ctrl.getProvider = function (req, res, next) {
     });
 }
 
-// ctrl.searchProviders = genericCtrl.searchProviders;
 ctrl.searchProviders = function (req, res, next) {
     ProviderSchema.search(req.query, function (err, result) {
         if (err) return errorResponse(err, res);
-        return success(res, result);
+        if (!result.providers.length) return success(res, result);
+
+        const ids = result.providers.map(provider => provider._id);
+        MaterialSchema.countMaterialsForProviders(ids, (err, counts) => {
+            if (err) return errorResponse(err, res);
+            const countObj = {};
+            counts.forEach((count) => countObj[count._id] = count);
+            result.providers = result.providers.map((provider) => {
+                const count = countObj[provider._id];
+                if (count) provider.total_materials = count.count;
+                else provider.total_materials = 0;
+                return provider;
+            })
+            return success(res, result);
+        });
     });
 }
 
