@@ -120,6 +120,7 @@ ProviderSchema.statics.search = function (filters, callback) {
         }
         query.is_company = type == 'company';
     }
+
     query['auth.deleted'] = false;
 
     const that = this;
@@ -131,23 +132,14 @@ ProviderSchema.statics.search = function (filters, callback) {
                 .skip(page * LIMIT)
                 .limit(LIMIT)
                 .lean()
-                .exec((err, providers) => {
-                    if (err) return asyncCallback(err);
-                    return asyncCallback(null, providers);
-                });
+                .exec(asyncCallback);
         },
         total_providers: function (asyncCallback) {
             that.model(COLLECTION)
                 .countDocuments(query)
-                .exec((err, count) => {
-                    if (err) return asyncCallback(err);
-                    return asyncCallback(null, count);
-                });
+                .exec(asyncCallback);
         }
-    }, function (err, results) {
-        if (err) return callback(err);
-        return callback(null, results);
-    });
+    }, callback);
 }
 
 ProviderSchema.statics.updateProvider = function (oId, update, callback) {
