@@ -21,9 +21,9 @@ TransactionSchema.index({ created_at: 1 });
 
 TransactionSchema.statics.getSellsReportByProvider = function (provider, lastXDays, callback) {
     const today = luxon.DateTime.utc().endOf("day");
-    const xdaysAgo = today.minus(luxon.Duration.fromObject({ days: 7 })).startOf("day");
-    console.log(today.toISO());
-    console.log(xdaysAgo.toISO());
+    const xdaysAgo = today
+        .minus(luxon.Duration.fromObject({ days: 6 }))
+        .startOf("day");
 
     this.model(COLLECTION)
         .aggregate([
@@ -47,7 +47,6 @@ TransactionSchema.statics.getSellsReportByProvider = function (provider, lastXDa
         ])
         .exec((err, result) => {
             if (err) return callback(err);
-            if (!result.length) return callback(null, result);
 
             const toObj = {};
             result.forEach((e) => {
@@ -59,9 +58,6 @@ TransactionSchema.statics.getSellsReportByProvider = function (provider, lastXDa
 
             let s = xdaysAgo;
             let new_result = [];
-            console.log(s.day !== today.day);
-            console.log(s.month !== today.month);
-            console.log(s.year !== today.year);
 
             for (let i = 0; i < 7; i++) {
                 let key = `${s.day}:${s.month}:${s.year}`;
