@@ -42,10 +42,12 @@ async.series([
 function startServer() {
     const express = require('express');
     const morgan = require('morgan');
+    const cors = require('cors');
     const app = express();
     const server = require('http').createServer(app);
     const port = process.env.PORT || 5000;
 
+    app.use(cors());
     app.use(express.json());
     app.use(express.urlencoded({ extended: false }));
     app.use(morgan('dev'));
@@ -62,6 +64,7 @@ function startServer() {
             return res.status(400).end('Bad Request');
         }
         logger.error(err);
+        console.log(err);
         return res.status(500).end('Internal Error');
     });
 
