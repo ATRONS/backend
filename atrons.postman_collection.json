@@ -21,12 +21,12 @@
 									"urlencoded": [
 										{
 											"key": "email",
-											"value": "dawit@gmail.com",
+											"value": "admin@atrons.com",
 											"type": "text"
 										},
 										{
 											"key": "password",
-											"value": "aassword",
+											"value": "password",
 											"type": "text"
 										}
 									]
@@ -236,6 +236,27 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "get provider report",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/admin/users/providers/5f941bcfb5db532f34b9e47e/report",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"admin",
+										"users",
+										"providers",
+										"5f941bcfb5db532f34b9e47e",
+										"report"
+									]
+								}
+							},
+							"response": []
 						}
 					],
 					"protocolProfileBehavior": {},
@@ -251,7 +272,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"type\": \"BOOK\",\r\n    \"title\": \"ሐሰተኛው\",\r\n    \"subtitle\": \"በእምነት ስም\",\r\n    \"file\": {\r\n        \"id\": \"5f9687779369b33188a24906\",\r\n        \"size\": 4004,\r\n        \"contentType\": \"image/png\",\r\n        \"mimetype\": \"image/png\",\r\n        \"url\": \"/media/materials/5f9687779369b33188a24906\"\r\n    },\r\n    \"cover_img_url\": \"/media/images/someidhere\",\r\n    \"published_date\": \"11/12/2013\",\r\n    \"display_date\": \"ግንቦት 2005\",\r\n    \"ISBN\": \"OPTIONAL\",\r\n    \"synopsis\": \"REQUIRED FOR TYPE BOOK, NOT ALLOWED FOR OTHER TYPES\",\r\n    \"review\": \"OPTIONAL\",\r\n    \"tags\": [\"5face2c3e90aba294074feed\"],\r\n    \"pages\": 302,\r\n    \"edition\": 1,\r\n    \"provider\": \"5f9687779369b33188a24906\",\r\n    \"price\": {\r\n        \"free\": false,\r\n        \"selling\": 15,\r\n        \"rent\": {\r\n            \"value\": 5,\r\n            \"per\": 1\r\n        }\r\n    }\r\n}",
+									"raw": "{\r\n    \"type\": \"BOOK\",\r\n    \"title\": \"በፍቅር ስም\",\r\n    \"subtitle\": \"\",\r\n    \"file\": {\r\n        \"id\": \"5f9687779369b33188a24906\",\r\n        \"size\": 4004,\r\n        \"contentType\": \"image/png\",\r\n        \"mimetype\": \"image/png\",\r\n        \"url\": \"/media/materials/5f9687779369b33188a24906\"\r\n    },\r\n    \"cover_img_url\": \"/media/images/someidhere\",\r\n    \"published_date\": \"11/12/2013\",\r\n    \"display_date\": \"ግንቦት 2005\",\r\n    \"ISBN\": \"OPTIONAL\",\r\n    \"synopsis\": \"REQUIRED FOR TYPE BOOK, NOT ALLOWED FOR OTHER TYPES\",\r\n    \"review\": \"OPTIONAL\",\r\n    \"tags\": [\"5face2c3e90aba294074feed\"],\r\n    \"pages\": 302,\r\n    \"edition\": 1,\r\n    \"provider\": \"5f941bcfb5db532f34b9e47e\",\r\n    \"price\": {\r\n        \"free\": false,\r\n        \"selling\": 15,\r\n        \"rent\": {\r\n            \"value\": 5,\r\n            \"per\": 1\r\n        }\r\n    }\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -282,7 +303,7 @@
 										{
 											"key": "material",
 											"type": "file",
-											"src": "/C:/Users/HP/Desktop/github.PNG"
+											"src": "/D:/ebook/epub/books/1984 - George Orwell.epub"
 										}
 									]
 								},
@@ -384,14 +405,14 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{local_url}}/admin/materials/5face531ba1c443120354242",
+									"raw": "{{local_url}}/admin/materials/5fad3295cdd56a354c703555",
 									"host": [
 										"{{local_url}}"
 									],
 									"path": [
 										"admin",
 										"materials",
-										"5face531ba1c443120354242"
+										"5fad3295cdd56a354c703555"
 									]
 								}
 							},
@@ -449,7 +470,7 @@
 								{
 									"key": "image",
 									"type": "file",
-									"src": "/C:/Users/HP/Desktop/github.PNG"
+									"src": "/C:/Users/HP/Downloads/book_cover.jpg"
 								}
 							]
 						},
@@ -662,7 +683,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"firstname\": \"Abebe\",\r\n    \"lastname\": \"Biqila\",\r\n    \"gender\": \"MALE\",\r\n    \"email\": \"hiskel@gmail.com\",\r\n    \"password\": \"password\",\r\n    \"preferences\": {\r\n        \"language\": \"ENGLISH\"\r\n    }\r\n}",
+									"raw": "{\r\n    \"firstname\": \"Abebe\",\r\n    \"lastname\": \"Biqila\",\r\n    \"gender\": \"MALE\",\r\n    \"email\": \"dawit@gmail.com\",\r\n    \"password\": \"aassword\",\r\n    \"preferences\": {\r\n        \"language\": \"ENGLISH\"\r\n    }\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -774,18 +795,154 @@
 					"_postman_isSubFolder": true
 				},
 				{
+					"name": "material related",
+					"item": [
+						{
+							"name": "search materials",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/reader/materials?type=BOOK",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"reader",
+										"materials"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "BOOK"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get material",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/reader/materials/5fae6b51688af32e1cb4afce",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"reader",
+										"materials",
+										"5fae6b51688af32e1cb4afce"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "purchase material",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/reader/materials/5fae6b51688af32e1cb4afce/purchase",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"reader",
+										"materials",
+										"5fae6b51688af32e1cb4afce",
+										"purchase"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "provider related",
+					"item": [
+						{
+							"name": "get provider",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/reader/providers/5f941bcfb5db532f34b9e47e",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"reader",
+										"providers",
+										"5f941bcfb5db532f34b9e47e"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "search providers",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{local_url}}/reader/providers?page=0&display_name=",
+									"host": [
+										"{{local_url}}"
+									],
+									"path": [
+										"reader",
+										"providers"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "company",
+											"description": "// author | company",
+											"disabled": true
+										},
+										{
+											"key": "page",
+											"value": "0"
+										},
+										{
+											"key": "display_name",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
 					"name": "initialData",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{local_url}}/reader/initialData",
+							"raw": "{{local_url}}/reader/initialData?type=BOOK",
 							"host": [
 								"{{local_url}}"
 							],
 							"path": [
 								"reader",
 								"initialData"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "BOOK"
+								}
 							]
 						}
 					},
@@ -815,120 +972,6 @@
 								"reader",
 								"upload",
 								"image"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "get materials",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{local_url}}/reader/materials",
-							"host": [
-								"{{local_url}}"
-							],
-							"path": [
-								"reader",
-								"materials"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "get providers",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{local_url}}/reader/providers?page=0&display_name=",
-							"host": [
-								"{{local_url}}"
-							],
-							"path": [
-								"reader",
-								"providers"
-							],
-							"query": [
-								{
-									"key": "type",
-									"value": "company",
-									"description": "// author | company",
-									"disabled": true
-								},
-								{
-									"key": "page",
-									"value": "0"
-								},
-								{
-									"key": "display_name",
-									"value": ""
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "get provider",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{local_url}}/reader/providers/5f941bcfb5db532f34b9e47e",
-							"host": [
-								"{{local_url}}"
-							],
-							"path": [
-								"reader",
-								"providers",
-								"5f941bcfb5db532f34b9e47e"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "search materials",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{local_url}}/reader/materials?type=BOOK",
-							"host": [
-								"{{local_url}}"
-							],
-							"path": [
-								"reader",
-								"materials"
-							],
-							"query": [
-								{
-									"key": "type",
-									"value": "BOOK"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "get material",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{local_url}}/reader/materials/5f968f1df7b69e3a4ce641be",
-							"host": [
-								"{{local_url}}"
-							],
-							"path": [
-								"reader",
-								"materials",
-								"5f968f1df7b69e3a4ce641be"
 							]
 						}
 					},
@@ -997,14 +1040,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{local_url}}/media/images/5f9583d3d6ad7b0d443b1594",
+							"raw": "{{local_url}}/media/images/5fafe5d773282a12b852a0e3",
 							"host": [
 								"{{local_url}}"
 							],
 							"path": [
 								"media",
 								"images",
-								"5f9583d3d6ad7b0d443b1594"
+								"5fafe5d773282a12b852a0e3"
 							]
 						}
 					},
@@ -1057,7 +1100,7 @@
 	],
 	"variable": [
 		{
-			"id": "d87faf99-ee8b-449d-b4c1-e33d1cf6d235",
+			"id": "2e8b6d38-4164-40a8-a3ff-31e018dcd022",
 			"key": "local_url",
 			"value": "http://localhost:5000/api/v1"
 		}
