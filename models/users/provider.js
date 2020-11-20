@@ -110,8 +110,8 @@ ProviderSchema.statics.getProvider = function (oId, callback) {
 ProviderSchema.statics.search = function (filters, callback) {
     const page = isNaN(Number(filters.page)) ? 0 : Math.abs(Number(filters.page));
     const query = {};
-    if (filters.display_name) {
-        query.display_name = RegExp(`^${filters.display_name}`, 'i');
+    if (filters.legal_name) {
+        query.legal_name = RegExp(`^${filters.legal_name}`, 'i');
     }
     if (filters.type) {
         const type = _.toLower(_.trim(filters.type));
@@ -127,7 +127,7 @@ ProviderSchema.statics.search = function (filters, callback) {
         providers: function (asyncCallback) {
             that.model(COLLECTION)
                 .find(query)
-                .select('display_name avatar_url')
+                .select('display_name legal_name avatar_url')
                 .skip(page * LIMIT)
                 .limit(LIMIT)
                 .lean()
