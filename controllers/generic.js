@@ -177,9 +177,7 @@ ctrl.downloadFile = function (bucketName) {
 
 // ፟-፟------------------------------ provider mgmt commons ----------------------------
 ctrl.searchProviders = function (req, res, next) {
-    const page = isNaN(Number(req.query.page)) ? 0 : Math.abs(Number(req.query.page));
-
-    ProviderSchema.search(req.query, page, function (err, providers) {
+    ProviderSchema.search(req.query, function (err, providers) {
         if (err) return errorResponse(err, res);
         return success(res, providers);
     });

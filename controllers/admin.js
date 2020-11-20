@@ -7,6 +7,8 @@ const TransactionSchema = require('../models/transaction');
 const genericCtrl = require('./generic');
 const asyncLib = require('async');
 const _ = require('lodash');
+const provider = require("../models/users/provider");
+const { result } = require("lodash");
 
 const logger = global.logger;
 
@@ -39,6 +41,7 @@ ctrl.createProvider = function (req, res, next) {
         legal_name: req.body.legal_name,
         display_name: req.body.display_name,
         email: req.body.email,
+        phone: req.body.phone,
         auth: {
             password: req.body.password,
         },
@@ -71,9 +74,9 @@ ctrl.deleteProvider = function (req, res, next) {
     });
 }
 
-ctrl.getProvider = genericCtrl.getProvider;
+// ctrl.getProvider = genericCtrl.getProvider;
 
-ctrl.getProviderReport = function (req, res, next) {
+ctrl.getProvider = function (req, res, next) {
     asyncLib.parallel({
         provider: function (callback) {
             ProviderSchema.getProvider(req.params.id, function (err, provider) {
@@ -88,19 +91,29 @@ ctrl.getProviderReport = function (req, res, next) {
                 return callback(null, best);
             });
         },
-        sells: function (callback) {
-            TransactionSchema.getSellsReportByProvider(req.params.id, 10, function (err, sells) {
+        sellsReport: function (callback) {
+            const ofLastXDays = 7;
+            TransactionSchema.getSellsReportByProvider(req.params.id, ofLastXDays, function (err, sells) {
                 if (err) return callback(err);
                 return callback(null, sells);
             });
         }
     }, function (err, results) {
         if (err) return errorResponse(err, res);
-        return success(res, results);
+        const response = results.provider;
+        response.best_sellers = results.bestSellers;
+        response.sells_report = results.sellsReport;
+        return success(res, response);
     });
 }
 
-ctrl.searchProviders = genericCtrl.searchProviders;
+// ctrl.searchProviders = genericCtrl.searchProviders;
+ctrl.searchProviders = function (req, res, next) {
+    ProviderSchema.search(req.query, function (err, result) {
+        if (err) return errorResponse(err, res);
+        return success(res, result);
+    });
+}
 
 ctrl.uploadFile = genericCtrl.uploadFile;
 
@@ -113,6 +126,7 @@ ctrl.createMaterial = function (req, res, next) {
         cover_img_url: req.body.cover_img_url,
         published_date: req.body.published_date,
         display_date: req.body.display_date,
+        language: req.body.language,
         ISBN: req.body.ISBN,
         synopsis: req.body.synopsis,
         review: req.body.review,
