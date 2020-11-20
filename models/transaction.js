@@ -88,7 +88,6 @@ TransactionSchema.statics.getSellsReportByProvider = function (provider, lastXDa
 }
 
 TransactionSchema.statics.getBestSellersByProvider = function (provider, callback) {
-    // return callback(null, { response: true });
     this.model(COLLECTION).aggregate([
         {
             $match: {
@@ -104,6 +103,23 @@ TransactionSchema.statics.getBestSellersByProvider = function (provider, callbac
         },
         { $sort: { sold_copies: -1 } },
         { $limit: LIMIT }
+    ]).exec(callback);
+}
+
+TransactionSchema.statics.getTotalSellsByProvider = function (provider, callback) {
+    this.model(COLLECTION).aggregate([
+        {
+            $match: {
+                provider: mongoose.Types.ObjectId(provider),
+            }
+        },
+        {
+            $group: {
+                _id: "$provider",
+                sells_amount: { $sum: "$amount" },
+                sells_count: { $sum: 1 },
+            }
+        },
     ]).exec(callback);
 }
 
