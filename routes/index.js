@@ -165,10 +165,10 @@ router.get(
     // authMiddleware.authenticateAdmin,
     adminCtrl.getProvider);
 
-router.get(
-    adminBase + '/users/providers/:id/report',
-    // authMiddleware.authenticateAdmin,
-    adminCtrl.getProviderReport);
+// router.get(
+//     adminBase + '/users/providers/:id/report',
+//     // authMiddleware.authenticateAdmin,
+//     adminCtrl.getProviderReport);
 
 router.post(
     adminBase + '/users/providers',
