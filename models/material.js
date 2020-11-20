@@ -29,6 +29,7 @@ const MaterialSchema = mongoose.Schema({
 
     published_date: { type: Date, required: true },
     display_date: { type: String, trim: true },
+    language: { type: String, trim: true, lowercase: true, enum: ["english", "amharic"] },
 
     // Book related fields
     ISBN: { type: String, trim: true, sparse: true },
@@ -113,6 +114,7 @@ MaterialSchema.statics.updateMaterial = function (oId, update, callback) {
             material.cover_img_url = update.cover_img_url || material.cover_img_url;
             material.published_date = update.published_date || material.published_date;
             material.display_date = update.published_date || material.published_date;
+            material.language = update.language || material.language;
             material.ISBN = update.ISBN || material.ISBN;
             material.synopsis = update.synopsis || material.synopsis;
             material.review = update.review || material.review;
@@ -137,7 +139,7 @@ MaterialSchema.statics.search = function (filters, page, callback) {
 
     this.model(COLLECTION)
         .find(query)
-        .select('title subtitle cover_img_url')
+        .select('type title subtitle cover_img_url')
         .skip(page * LIMIT)
         .limit(LIMIT)
         .lean()

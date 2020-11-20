@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const luxon = require('luxon');
-const { listenerCount } = require('multer-gridfs-storage');
 
 const COLLECTION = 'transactions';
+const LIMIT = 10;
 
 const TransactionSchema = mongoose.Schema({
     reader: { type: mongoose.Types.ObjectId, },
@@ -20,8 +20,10 @@ const TransactionSchema = mongoose.Schema({
 TransactionSchema.index({ created_at: 1 });
 
 TransactionSchema.statics.getSellsReportByProvider = function (provider, lastXDays, callback) {
-    const today = luxon.DateTime.utc().startOf("day");
-    const xdaysAgo = today.minus(luxon.Duration.fromObject({ days: lastXDays }));
+    const today = luxon.DateTime.utc().endOf("day");
+    const xdaysAgo = today.minus(luxon.Duration.fromObject({ days: 7 })).startOf("day");
+    console.log(today.toISO());
+    console.log(xdaysAgo.toISO());
 
     this.model(COLLECTION)
         .aggregate([
@@ -43,11 +45,70 @@ TransactionSchema.statics.getSellsReportByProvider = function (provider, lastXDa
                 }
             }
         ])
-        .exec(callback);
+        .exec((err, result) => {
+            if (err) return callback(err);
+            if (!result.length) return callback(null, result);
+
+            const toObj = {};
+            result.forEach((e) => {
+                const key = `${e._id.day}:${e._id.month}:${e._id.year}`;
+                toObj[key] = e;
+            });
+
+            console.log(toObj);
+
+            let s = xdaysAgo;
+            let new_result = [];
+            console.log(s.day !== today.day);
+            console.log(s.month !== today.month);
+            console.log(s.year !== today.year);
+
+            for (let i = 0; i < 7; i++) {
+                let key = `${s.day}:${s.month}:${s.year}`;
+
+                if (toObj[key]) new_result.push(toObj[key]);
+                else {
+                    new_result.push({
+                        _id: {
+                            day: s.day,
+                            month: s.month,
+                            year: s.year
+                        },
+                        total_amount: 0,
+                        total_transactions: 0
+                    });
+                }
+
+                if (s.day == today.day &&
+                    s.month == today.month &&
+                    s.year == today.year) {
+                    break;
+                }
+
+                s = s.plus(luxon.Duration.fromObject({ days: 1 }));
+            }
+            return callback(null, new_result);
+        });
 }
 
 TransactionSchema.statics.getBestSellersByProvider = function (provider, callback) {
-    return callback(null, { dummy: { provider: provider, data: 'haha' } });
+    // return callback(null, { response: true });
+    this.model(COLLECTION).aggregate([
+        {
+            $match: {
+                provider: mongoose.Types.ObjectId(provider),
+            }
+        },
+        {
+            $group: {
+                _id: "$material",
+                sold_copies: { $sum: 1 },
+                total_amount: { $sum: "$amount" },
+            }
+        },
+        { $sort: { sold_copies: -1 } },
+        { $limit: LIMIT }
+    ]).exec(callback);
 }
 
 module.exports = mongoose.model(COLLECTION, TransactionSchema);

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const luxon = require('luxon');
 const validator = require('../../helpers/validator');
+const asyncLib = require('async');
 const _ = require('lodash');
 
 const COLLECTION = 'providers';
@@ -28,6 +29,7 @@ const ProviderSchema = mongoose.Schema({
     legal_name: { type: String, required: true, trim: true },
     display_name: { type: String, required: true, trim: true, index: true },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
+    phone: { type: String, required: true, trim: true },
     avatar_url: { type: String },
 
     is_company: { type: Boolean, required: true, },
@@ -105,7 +107,8 @@ ProviderSchema.statics.getProvider = function (oId, callback) {
         .exec(callback);
 }
 
-ProviderSchema.statics.search = function (filters, page, callback) {
+ProviderSchema.statics.search = function (filters, callback) {
+    const page = isNaN(Number(filters.page)) ? 0 : Math.abs(Number(filters.page));
     const query = {};
     if (filters.display_name) {
         query.display_name = RegExp(`^${filters.display_name}`, 'i');
@@ -119,13 +122,32 @@ ProviderSchema.statics.search = function (filters, page, callback) {
     }
     query['auth.deleted'] = false;
 
-    this.model(COLLECTION)
-        .find(query)
-        .select('display_name avatar_url')
-        .skip(page * LIMIT)
-        .limit(LIMIT)
-        .lean()
-        .exec(callback);
+    const that = this;
+    asyncLib.parallel({
+        providers: function (asyncCallback) {
+            that.model(COLLECTION)
+                .find(query)
+                .select('display_name avatar_url')
+                .skip(page * LIMIT)
+                .limit(LIMIT)
+                .lean()
+                .exec((err, providers) => {
+                    if (err) return asyncCallback(err);
+                    return asyncCallback(null, providers);
+                });
+        },
+        total_providers: function (asyncCallback) {
+            that.model(COLLECTION)
+                .countDocuments(query)
+                .exec((err, count) => {
+                    if (err) return asyncCallback(err);
+                    return asyncCallback(null, count);
+                });
+        }
+    }, function (err, results) {
+        if (err) return callback(err);
+        return callback(null, results);
+    });
 }
 
 ProviderSchema.statics.updateProvider = function (oId, update, callback) {
@@ -139,6 +161,7 @@ ProviderSchema.statics.updateProvider = function (oId, update, callback) {
             if (!provider) return callback({ custom: 'Provider not found', status: 404 });
 
             provider.display_name = update.display_name || provider.display_name;
+            provider.phone = update.phone || provider.phone;
             provider.avatar_url = update.avatar_url || provider.avatar_url;
             provider.author_info = update.author_info || provider.author_info;
             provider.company_info = update.company_info || provider.company_info;
