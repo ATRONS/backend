@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const luxon = require('luxon');
+const asyncLib = require('async');
 const _ = require('lodash');
 
 const COLLECTION = 'materials';
@@ -21,8 +22,8 @@ const MaterialSchema = mongoose.Schema({
         enum: ['BOOK', 'MAGAZINE', 'NEWSPAPER'],
         index: true,
     },
-    title: { type: String, required: true, trim: true, },
-    subtitle: { type: String, default: "", trim: true },
+    title: { type: String, required: true, trim: true, index: true },
+    subtitle: { type: String, default: "", trim: true, sparse: true },
 
     file: { type: FileSchema, required: true },
     cover_img_url: { type: String, required: true },
@@ -77,7 +78,7 @@ const MaterialSchema = mongoose.Schema({
     }
 });
 
-MaterialSchema.index({ title: 'text', subtitle: 'text' });
+MaterialSchema.index({ title: 'text', subtitle: 'text', ISBN: 'text' });
 
 MaterialSchema.pre('save', function (next) {
     // do price validation in here.
@@ -131,19 +132,36 @@ MaterialSchema.statics.search = function (filters, page, callback) {
     if (!_.isFinite(page)) page = 0;
     const query = {};
 
-    if (filters.title) {
-        query.$text = { $search: text, $caseSensitive: false };
+    if (filters.search) {
+        query.$text = { $search: filters.search, $caseSensitive: false };
     }
     if (filters.type) query.type = filters.type.trim().toUpperCase();
-    query.deleted = false;
 
-    this.model(COLLECTION)
-        .find(query)
-        .select('type title subtitle cover_img_url')
-        .skip(page * LIMIT)
-        .limit(LIMIT)
-        .lean()
-        .exec(callback);
+    if (filters.provider) {
+        if (mongoose.isValidObjectId(filters.provider)) {
+            console.log('valid filter.provider');
+            query.provider = filters.provider;
+        }
+    }
+    query.deleted = false;
+    const that = this;
+    asyncLib.parallel({
+        materials: function (asyncCallback) {
+            that.model(COLLECTION)
+                .find(query)
+                .select('type title subtitle cover_img_url ISBN')
+                .populate('provider', { legal_name: 1, display_name: 1 })
+                .skip(page * LIMIT)
+                .limit(LIMIT)
+                .lean()
+                .exec(asyncCallback);
+        },
+        total_materials: function (asyncCallback) {
+            that.model(COLLECTION)
+                .countDocuments(query)
+                .exec(asyncCallback);
+        }
+    }, callback);
 }
 
 MaterialSchema.statics.countMaterialsForProviders = function (ids, callback) {
