@@ -95,7 +95,7 @@ ctrl.purchaseMaterial = function (req, res, next) {
         if (!material) return failure(res, 'Material not found', 404);
 
         const transaction = TransactionSchema({
-            provider: req.params.id,
+            provider: material.provider._id,
             material: material._id,
             amount: material.price.selling,
         });
