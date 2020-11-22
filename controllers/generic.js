@@ -167,7 +167,6 @@ ctrl.downloadFile = function (bucketName) {
             if (!results.length) return failure(res, 'Not found', 404);
 
             const fileStream = bucket.openDownloadStream(id);
-
             if (bucketName == 'materials') {
                 // const keyIvPair = encrypt.generateEncrKeyAndIV();
                 const keyIvPair = {
@@ -175,6 +174,7 @@ ctrl.downloadFile = function (bucketName) {
                     iv: "abcdefghijklmnop",
                 }
 
+                fileStream.setEncoding('base64');
                 encrypt.encryptAndPipe(fileStream, res, keyIvPair, (err) => {
                     if (err) {
                         logger.error(err);
