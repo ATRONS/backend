@@ -9,6 +9,7 @@ const jwtCtrl = require('../auth/jwt');
 const luxon = require('luxon');
 const emailer = require('../emailer/emailer');
 const asyncLib = require('async');
+const encrypt = require('../encryption/encryption');
 const _ = require('lodash');
 const {
     success,
@@ -165,12 +166,31 @@ ctrl.downloadFile = function (bucketName) {
             if (err) return failure(res, err);
             if (!results.length) return failure(res, 'Not found', 404);
 
-            bucket.openDownloadStream(id).
-                pipe(res).
-                on('error', function (error) {
+            const fileStream = bucket.openDownloadStream(id);
+
+            if (bucketName == 'materials') {
+                // const keyIvPair = encrypt.generateEncrKeyAndIV();
+                const keyIvPair = {
+                    key: "abcdefghijklmnopqrstuvwxyzabcdef",
+                    iv: "abcdefghijklmnop",
+                }
+
+                encrypt.encryptAndPipe(fileStream, res, keyIvPair, (err) => {
+                    if (err) {
+                        logger.error(err);
+                        return failure(res, 'Internal Error', 500);
+                    }
+                }).on('error', (err) => {
+                    logger.error(err);
+                    return failure(res, 'Internal Error', 500);
+                });
+            } else {
+                fileStream.pipe(res).on('error', function (error) {
                     logger.error(error);
                     failure(res, 'Internal Error', 500);
                 });
+            }
+
         });
     }
 }
