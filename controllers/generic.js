@@ -174,7 +174,6 @@ ctrl.downloadFile = function (bucketName) {
                     iv: "abcdefghijklmnop",
                 }
 
-                fileStream.setEncoding('base64');
                 encrypt.encryptAndPipe(fileStream, res, keyIvPair, (err) => {
                     if (err) {
                         logger.error(err);
