@@ -6,7 +6,6 @@ const authMiddleware = require('../middleware/auth');
 
 const multer = require('multer');
 const GridFsStorage = require('multer-gridfs-storage');
-const { toUpper } = require('lodash');
 
 const MATERIAL_SIZE_LIMIT = 100 * 1024 * 1024; // 100 Mb
 const IMG_SIZE_LIMIT = 2 * 1024 * 1024; // 2 Mb
@@ -130,6 +129,16 @@ router.post(
     imgUpload.single('image'),
     providerCtrl.uploadFile);
 
+router.get(
+    providerBase + '/materials',
+    // authMiddleware.authenticateProvider,
+    providerCtrl.getOwnMaterials);
+
+router.get(
+    providerBase + '/earnings',
+    // authMiddleware.authenticateProvider,
+    providerCtrl.getEarningsByMaterials);
+
 // ------------------------- admin area -----------------------------
 const adminBase = '/admin';
 router.post(
@@ -164,11 +173,6 @@ router.get(
     adminBase + '/users/providers/:id',
     // authMiddleware.authenticateAdmin,
     adminCtrl.getProvider);
-
-// router.get(
-//     adminBase + '/users/providers/:id/report',
-//     // authMiddleware.authenticateAdmin,
-//     adminCtrl.getProviderReport);
 
 router.post(
     adminBase + '/users/providers',
