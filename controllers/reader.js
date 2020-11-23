@@ -6,16 +6,11 @@ const jwtCtrl = require('../auth/jwt');
 const genericCtrl = require('./generic');
 const luxon = require('luxon');
 const asyncLib = require('async');
-const emailer = require('../emailer/emailer');
-const _ = require('lodash');
 const {
     success,
     failure,
     errorResponse,
 } = require('../helpers/response');
-const tag = require('../models/tag');
-const { result } = require('lodash');
-const response = require('../helpers/response');
 
 const logger = global.logger;
 
