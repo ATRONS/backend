@@ -10,6 +10,7 @@ const {
     success,
     failure,
     errorResponse,
+    defaultHandler,
 } = require('../helpers/response');
 
 const logger = global.logger;
@@ -95,10 +96,7 @@ ctrl.purchaseMaterial = function (req, res, next) {
             amount: material.price.selling,
         });
 
-        transaction.save((err, saved) => {
-            if (err) return errorResponse(err, res);
-            return success(res, saved);
-        });
+        transaction.save(defaultHandler(res));
     });
 }
 
@@ -111,16 +109,10 @@ ctrl.getAllTags = genericCtrl.getAllTags;
 ctrl.initialData = function (req, res, next) {
     asyncLib.parallel({
         generes: function (callback) {
-            TagSchema.getAllTags(function (err, tags) {
-                if (err) return callback(err, null);
-                return callback(null, tags);
-            });
+            TagSchema.getAllTags(callback);
         },
         popular: function (callback) {
-            MaterialSchema.search(req.query, 0, function (err, materials) {
-                if (err) return callback(err, null);
-                return callback(null, materials);
-            });
+            MaterialSchema.search(req.query, callback);
         }
     }, function (err, results) {
         if (err) return errorResponse(err, res);
@@ -135,13 +127,6 @@ ctrl.initialData = function (req, res, next) {
 
         const response = { generes, popular };
         return success(res, response);
-    });
-}
-
-ctrl.getRepMaterials = function (req, res, next) {
-    MaterialSchema.getMaterialsInEachTag(null, function (err, result) {
-        if (err) return errorResponse(err, res);
-        return success(res, result);
     });
 }
 
