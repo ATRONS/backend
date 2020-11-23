@@ -15,8 +15,8 @@ ctrl.generateEncrKeyAndIV = function () {
 }
 
 ctrl.encryptAndPipe = function (input, output, keyIV, errCallback) {
-    const cipher = crypto.createCipheriv(algorithm, keyIV.key, keyIV.iv);
-    return pipeline(input, cipher, output, errCallback);
+    const encrypt = crypto.createCipheriv(algorithm, keyIV.key, keyIV.iv);
+    return pipeline(input, encrypt, output, errCallback);
 }
 
 module.exports = ctrl;
