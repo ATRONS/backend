@@ -15,6 +15,7 @@ const {
     success,
     failure,
     errorResponse,
+    defaultHandler,
 } = require('../helpers/response');
 
 const mongo = mongoose.mongo;
@@ -196,10 +197,7 @@ ctrl.downloadFile = function (bucketName) {
 
 // ፟-፟------------------------------ provider mgmt commons ----------------------------
 ctrl.searchProviders = function (req, res, next) {
-    ProviderSchema.search(req.query, function (err, providers) {
-        if (err) return errorResponse(err, res);
-        return success(res, providers);
-    });
+    ProviderSchema.search(req.query, defaultHandler(res));
 }
 
 ctrl.getProvider = function (req, res, next) {
@@ -212,27 +210,11 @@ ctrl.getProvider = function (req, res, next) {
 
 // ----------------------------- Material mgmt commons -----------------------------
 ctrl.getMaterial = function (req, res, next) {
-    asyncLib.parallel({
-        material: function (callback) {
-            MaterialSchema.getMaterial(req.params.id, function (err, material) {
-                if (err) return callback(err);
-                if (!material) return callback('not found');
-                return callback(null, material);
-            });
-        }
-    }, function (err, results) {
-        if (err) return errorResponse(err, res);
-        return success(res, results);
-    });
+    MaterialSchema.getMaterial(req.params.id, defaultHandler(res));
 }
 
 ctrl.searchMaterials = function (req, res, next) {
-    const page = isNaN(Number(req.query.page)) ? 0 : Math.abs(Number(req.query.page));
-
-    MaterialSchema.search(req.query, page, function (err, materials) {
-        if (err) return errorResponse(err, res);
-        return success(res, materials);
-    });
+    MaterialSchema.search(req.query, defaultHandler(res));
 }
 // ---------------------------------------------------------------------------------
 ctrl.getAllTags = function (req, res, next) {
