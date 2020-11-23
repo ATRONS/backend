@@ -120,6 +120,25 @@ TransactionSchema.statics.getTotalSellsByProvider = function (provider, callback
                 sells_count: { $sum: 1 },
             }
         },
+        { $sort: { _id: -1, }, },
+    ]).exec(callback);
+}
+
+TransactionSchema.statics.earningsByMaterials = function (matIds, callback) {
+    this.model(COLLECTION).aggregate([
+        {
+            $match: {
+                material: { $in: matIds },
+            }
+        },
+        {
+            $group: {
+                _id: "$material",
+                amount: { $sum: "$amount" },
+                count: { $sum: 1 },
+            }
+        },
+        { $sort: { _id: -1, }, },
     ]).exec(callback);
 }
 
