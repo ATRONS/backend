@@ -12,14 +12,14 @@ const AuthSchema = require('./sub/auth');
 const ReaderSchema = mongoose.Schema({
     firstname: { type: String, required: true, trim: true },
     lastname: { type: String, required: true, trim: true },
-    gender: { type: String, required: true, enum: ['MALE', 'FEMALE'] },
+    gender: { type: String, enum: ['MALE', 'FEMALE'] },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
     avatar_url: { type: String },
 
     auth: { type: AuthSchema, required: true },
 
     preferences: {
-        language: { type: String, required: true, enum: ['ENGLISH', 'AMHARIC'] },
+        language: { type: String, enum: ['ENGLISH', 'AMHARIC'], default: 'ENGLISH' },
     },
 }, {
     timestamps: {
