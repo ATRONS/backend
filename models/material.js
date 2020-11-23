@@ -128,8 +128,9 @@ MaterialSchema.statics.updateMaterial = function (oId, update, callback) {
         });
 }
 
-MaterialSchema.statics.search = function (filters, page, callback) {
-    if (!_.isFinite(page)) page = 0;
+MaterialSchema.statics.search = function (filters, callback) {
+    const page = isNaN(Number(filters.page)) ? 0 : Math.abs(Number(filters.page));
+
     const query = {};
 
     if (filters.search) {
@@ -139,7 +140,6 @@ MaterialSchema.statics.search = function (filters, page, callback) {
 
     if (filters.provider) {
         if (mongoose.isValidObjectId(filters.provider)) {
-            console.log('valid filter.provider');
             query.provider = filters.provider;
         }
     }
@@ -164,20 +164,45 @@ MaterialSchema.statics.search = function (filters, page, callback) {
     }, callback);
 }
 
+MaterialSchema.statics.minifiedSearch = function (filters, callback) {
+    const page = isNaN(Number(filters.page)) ? 0 : Math.abs(Number(filters.page));
+
+    const query = {};
+
+    if (filters.search) {
+        query.$text = { $search: filters.search, $caseSensitive: false };
+    }
+    if (filters.type) query.type = filters.type.trim().toUpperCase();
+
+    if (filters.provider) {
+        if (mongoose.isValidObjectId(filters.provider)) {
+            query.provider = filters.provider;
+        }
+    }
+    query.deleted = false;
+    const that = this;
+    asyncLib.parallel({
+        materials: function (asyncCallback) {
+            that.model(COLLECTION)
+                .find(query)
+                .select('type title subtitle cover_img_url ISBN')
+                .skip(page * LIMIT)
+                .limit(LIMIT)
+                .lean()
+                .exec(asyncCallback);
+        },
+        total_materials: function (asyncCallback) {
+            that.model(COLLECTION)
+                .countDocuments(query)
+                .exec(asyncCallback);
+        }
+    }, callback);
+}
+
 MaterialSchema.statics.countMaterialsForProviders = function (ids, callback) {
     this.model(COLLECTION).aggregate([
         { $match: { provider: { $in: ids } } },
         { $group: { _id: "$provider", count: { $sum: 1 } } }
-    ]).exec(callback);
-}
-
-MaterialSchema.statics.getMaterialsInEachTag = function (tagIds, callback) {
-    this.model(COLLECTION).aggregate([
-        { $match: { type: "BOOK" }, },
-        { $unwind: "$tags" },
-        { $project: { title: 1, subtitle: 1, tags: 1 } },
-        // { $group: { _id: "$tags" }, },
-        // { $limit: 3 },
     ]).exec(callback);
 }
 
