@@ -17,4 +17,12 @@ response.errorResponse = function (err, res) {
     return response.failure(res, 'Internal Error', 500);
 }
 
+response.defaultHandler = function (res) {
+    return function (err, result) {
+        if (err) return response.errorResponse(err, res);
+        if (!res) return response.failure(res, 'Not found', 404);
+        return response.success(res, result);
+    }
+}
+
 module.exports = response;
