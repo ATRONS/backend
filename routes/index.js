@@ -2,6 +2,7 @@ const adminCtrl = require('../controllers/admin');
 const providerCtrl = require('../controllers/provider');
 const readerCtrl = require('../controllers/reader');
 const genericCtrl = require('../controllers/generic');
+const hellocashCtrl = require('../controllers/payment/hellocash');
 const authMiddleware = require('../middleware/auth');
 
 const multer = require('multer');
@@ -241,5 +242,10 @@ router.get(
 router.get(
     mediaBase + '/images/:id',
     genericCtrl.downloadFile('images'));
+
+// ----------------------------- payment webhooks ----------------------------------------
+router.post(
+    '/hellocash/webhook',
+    hellocashCtrl.webHook);
 
 module.exports = router;
