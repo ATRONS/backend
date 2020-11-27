@@ -132,6 +132,7 @@ ctrl.purchaseMaterial = function (req, res, next) {
 
                 invoice_id: invoice.id,
                 invoice_code: invoice.code,
+                tracenumber: invoice.tracenumber,
                 status: invoice.status,
 
                 invoice_dump: invoice,
