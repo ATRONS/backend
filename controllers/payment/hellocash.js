@@ -36,10 +36,10 @@ ctrl.webHook = function (req, res, next) {
     const hmacHex = hmac.update(payload).digest('hex');
     const hmacIsCorrect = req.headers['X-Api-Hmac'] === hmacHex;
 
-    loggers.info(payload);
+    logger.info(payload);
 
     if (!hmacIsCorrect) {
-        loggers.warning('hmac incorrect, possible hack');
+        logger.warning('hmac incorrect, possible hack');
         return res.end();
     }
 
