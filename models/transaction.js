@@ -20,6 +20,7 @@ const TransactionSchema = mongoose.Schema({
     invoice_code: { type: String },
     transaction_id: { type: String, sparse: true },
     transaction_fee: { type: Number, default: 0 },
+    tracenumber: { type: String, sparse: true },
     status: { type: String, required: true },
 
     // the invoice object as received from the payment service
