@@ -9,4 +9,10 @@ validator.isEmail = function (value) {
     return re.test(value.trim().toLowerCase());
 }
 
+validator.isPhoneNumber = function (phone) {
+    if (!_.isString(phone)) return false;
+    const re = /^\+2519[0-9]{8}$/;
+    return re.test(phone.trim());
+}
+
 module.exports = validator;

@@ -45,7 +45,7 @@ router.post(
 
 router.post(
     readerBase + '/logout',
-    // authMiddleware.authenticateReader,
+    authMiddleware.authenticateReader,
     readerCtrl.logout);
 
 router.post(
@@ -54,48 +54,48 @@ router.post(
 
 router.get(
     readerBase + '/initialData',
-    // authMiddleware.authenticateReader,
+    authMiddleware.authenticateReader,
     readerCtrl.initialData);
 
 router.put(
     readerBase + '/profile',
-    // authMiddleware.authenticateReader,
+    authMiddleware.authenticateReader,
     readerCtrl.updateProfile);
 
 router.post(
     readerBase + '/upload/image',
-    // authMiddleware.authenticateReader,
+    authMiddleware.authenticateReader,
     imgUpload.single('image'),
     readerCtrl.uploadFile);
 
 router.get(
     readerBase + '/materials',
-    // authMiddleware.authenticateReader,
+    authMiddleware.authenticateReader,
     readerCtrl.searchMaterials);
 
 router.get(
     readerBase + '/materials/tags',
-    // authMiddleware.authenticateReader,
+    authMiddleware.authenticateReader,
     readerCtrl.getAllTags);
 
 router.get(
     readerBase + '/materials/:id',
-    // authMiddleware.authenticateReader,
+    authMiddleware.authenticateReader,
     readerCtrl.getMaterial);
 
 router.post(
     readerBase + '/materials/:id/purchase',
-    // authMiddleware.authenticateReader,
+    authMiddleware.authenticateReader,
     readerCtrl.purchaseMaterial);
 
 router.get(
     readerBase + '/providers',
-    // authMiddleware.authenticateReader,
+    authMiddleware.authenticateReader,
     readerCtrl.searchProviders);
 
 router.get(
     readerBase + '/providers/:id',
-    // authMiddleware.authenticateReader,
+    authMiddleware.authenticateReader,
     readerCtrl.getProvider);
 
 // ------------------------- provider area --------------------------

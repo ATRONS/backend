@@ -1,5 +1,3 @@
-const fs = require('fs');
-const path = require('path');
 const AdminSchema = require('../models/users/admin');
 const TagSchema = require('../models/tag');
 

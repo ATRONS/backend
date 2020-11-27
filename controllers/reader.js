@@ -2,8 +2,13 @@ const ReaderSchema = require('../models/users/reader');
 const MaterialSchema = require('../models/material');
 const TagSchema = require('../models/tag');
 const TransactionSchema = require('../models/transaction');
+const uuid = require('uuid');
+
 const jwtCtrl = require('../auth/jwt');
 const genericCtrl = require('./generic');
+const helloCashCtrl = require('./payment/hellocash');
+const validator = require('../helpers/validator');
+
 const luxon = require('luxon');
 const asyncLib = require('async');
 const {
@@ -12,8 +17,6 @@ const {
     errorResponse,
     defaultHandler,
 } = require('../helpers/response');
-
-const logger = global.logger;
 
 const ctrl = {};
 
@@ -86,17 +89,56 @@ ctrl.searchMaterials = genericCtrl.searchMaterials;
 ctrl.getMaterial = genericCtrl.getMaterial;
 
 ctrl.purchaseMaterial = function (req, res, next) {
+    if (!validator.isPhoneNumber(req.body.phone)) {
+        return failure(res, 'Invaild phone number');
+    }
+
     MaterialSchema.getMaterial(req.params.id, (err, material) => {
         if (err) return errorResponse(err, res);
         if (!material) return failure(res, 'Material not found', 404);
 
-        const transaction = TransactionSchema({
-            provider: material.provider._id,
-            material: material._id,
-            amount: material.price.selling,
-        });
+        let expiresOn = luxon.DateTime.utc();
+        expiresOn = expiresOn.plus(luxon.Duration.fromObject({ days: 1 }));
+        expiresOn = expiresOn.toISO();
 
-        transaction.save(defaultHandler(res));
+        const invoiceInfo = {
+            amount: material.price.selling,
+            description: `Invoice for ${material.title}`,
+            currency: "ETB",
+            expires: expiresOn,
+            tracenumber: uuid.v4(),
+            notifyfrom: true,
+            notifyto: true,
+            from: req.body.phone.trim(),
+        };
+
+        helloCashCtrl.createInvoice(invoiceInfo, (err, invoice) => {
+            if (err) {
+                console.log(err);
+                return failure(res, 'Could not create Invoice', 500);
+            }
+
+            const transaction = TransactionSchema({
+                reader: req.user._id,
+                provider: material.provider._id,
+                material: material._id,
+
+                amount: material.price.selling,
+                currency: invoice.currency,
+                payer: invoice.from,
+                receiver: invoice.to,
+                date: invoice.date,
+                expires: invoice.expires,
+
+                invoice_id: invoice.id,
+                invoice_code: invoice.code,
+                status: invoice.status,
+
+                invoice_dump: invoice,
+            });
+
+            transaction.save(defaultHandler(res));
+        });
     });
 }
 
