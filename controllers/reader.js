@@ -3,6 +3,7 @@ const MaterialSchema = require('../models/material');
 const TagSchema = require('../models/tag');
 const TransactionSchema = require('../models/transaction');
 const uuid = require('uuid');
+const _ = require('lodash');
 
 const jwtCtrl = require('../auth/jwt');
 const genericCtrl = require('./generic');
@@ -87,8 +88,8 @@ ctrl.login = function (req, res, next) {
                 const user_info = saved.toObject();
                 user_info.auth = undefined;
                 user_info.__v = undefined;
-                user_info.role = undefined;
-                const response = { token: token.token, user_info: saved };
+                user_info.role = tokenInfo.role;
+                const response = { token: token.token, user_info: user_info };
                 success(res, response);
             });
         });
