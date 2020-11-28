@@ -35,7 +35,8 @@ const logger = global.logger;
 
 const ctrl = {};
 
-ctrl.login = function (req, res, next, secret, Schema) {
+// implementation will need to change at some point. I don't like it.
+ctrl.adminProviderLogin = function (req, res, next) {
     const required = ['email', 'password'];
 
     for (let key of required) {
@@ -46,25 +47,53 @@ ctrl.login = function (req, res, next, secret, Schema) {
 
     const email = req.body.email.trim().toLowerCase();
     const password = req.body.password.trim();
-
-    Schema.findOne({ email }, async (err, user) => {
+    const secret = process.env.ENCR_SECRET;
+    ProviderSchema.findOne({ email: email }, (err, provider) => {
         if (err) return errorResponse(err, res);
-        if (!user) return failure(res, 'Account not found', 404);
+        if (provider) {
+            const passwordCorrect = provider.isPasswordCorrect(password);
+            if (!passwordCorrect) return failure(res, 'Email or password incorrect');
 
-        const passwordCorrect = user.isPasswordCorrect(password);
-        if (!passwordCorrect) return failure(res, 'Password incorrect');
+            const tokenInfo = { userId: provider._id, role: 'provider' };
+            jwtCtrl.createToken(tokenInfo, secret, (err, token) => {
+                if (err) return errorResponse(err, res);
 
-        jwtCtrl.createToken({ userId: user._id }, secret, (err, token) => {
-            if (err) return errorResponse(err, res);
-
-            user.addSessionId(token.sessionId);
-            user.save((err, result) => {
-                if (err) return failure(res, 'Internal Error', 500);
-
-                const response = { token: token.token };
-                success(res, response);
+                provider.addSessionId(token.sessionId);
+                provider.save((err, saved) => {
+                    if (err) return failure(res, 'Internal Error', 500);
+                    const user_info = saved.toObject();
+                    user_info.auth = undefined;
+                    user_info.__v = undefined;
+                    user_info.role = tokenInfo.role;
+                    const response = { token: token.token, user_info: user_info };
+                    success(res, response);
+                });
             });
-        });
+        } else {
+            AdminSchema.findOne({ email: email }, (err, admin) => {
+                if (err) return errorResponse(err, res);
+                if (!admin) return failure(res, 'Email or password incorrect');
+
+                const passwordCorrect = admin.isPasswordCorrect(password);
+                if (!passwordCorrect) return failure(res, 'Email or password incorrect');
+
+                const tokenInfo = { userId: admin._id, role: 'admin' };
+                jwtCtrl.createToken(tokenInfo, secret, (err, token) => {
+                    if (err) return errorResponse(err, res);
+
+                    admin.addSessionId(token.sessionId);
+                    admin.save((err, saved) => {
+                        if (err) return failure(res, 'Internal Error', 500);
+                        const user_info = saved.toObject();
+                        user_info.auth = undefined;
+                        user_info.__v = undefined;
+                        user_info.role = tokenInfo.role;
+                        const response = { token: token.token, user_info: user_info };
+                        success(res, response);
+                    });
+                });
+            });
+        }
     });
 }
 
