@@ -46,7 +46,7 @@ router.post(
 
 router.post(
     readerBase + '/logout',
-    authMiddleware.authenticateReader,
+    authMiddleware.authenticateUser,
     readerCtrl.logout);
 
 router.post(
@@ -55,60 +55,52 @@ router.post(
 
 router.get(
     readerBase + '/initialData',
-    authMiddleware.authenticateReader,
+    authMiddleware.authenticateUser,
     readerCtrl.initialData);
 
 router.put(
     readerBase + '/profile',
-    authMiddleware.authenticateReader,
+    authMiddleware.authenticateUser,
     readerCtrl.updateProfile);
 
 router.post(
     readerBase + '/upload/image',
-    authMiddleware.authenticateReader,
+    authMiddleware.authenticateUser,
     imgUpload.single('image'),
     readerCtrl.uploadFile);
 
 router.get(
     readerBase + '/materials',
-    authMiddleware.authenticateReader,
+    authMiddleware.authenticateUser,
     readerCtrl.searchMaterials);
 
 router.get(
     readerBase + '/materials/tags',
-    authMiddleware.authenticateReader,
+    authMiddleware.authenticateUser,
     readerCtrl.getAllTags);
 
 router.get(
     readerBase + '/materials/:id',
-    authMiddleware.authenticateReader,
+    authMiddleware.authenticateUser,
     readerCtrl.getMaterial);
 
 router.post(
     readerBase + '/materials/:id/purchase',
-    authMiddleware.authenticateReader,
+    authMiddleware.authenticateUser,
     readerCtrl.purchaseMaterial);
 
 router.get(
     readerBase + '/providers',
-    authMiddleware.authenticateReader,
+    authMiddleware.authenticateUser,
     readerCtrl.searchProviders);
 
 router.get(
     readerBase + '/providers/:id',
-    authMiddleware.authenticateReader,
+    authMiddleware.authenticateUser,
     readerCtrl.getProvider);
 
 // ------------------------- provider area --------------------------
 const providerBase = '/provider';
-router.post(
-    providerBase + '/login',
-    providerCtrl.login);
-
-router.post(
-    providerBase + '/logout',
-    // authMiddleware.authenticateProvider,
-    providerCtrl.logout);
 
 router.post(
     providerBase + '/forgotPassword',
@@ -116,40 +108,32 @@ router.post(
 
 router.get(
     providerBase + '/initialData',
-    // authMiddleware.authenticateProvider,
+    authMiddleware.authenticateUser,
     providerCtrl.initialData);
 
 router.put(
     providerBase + '/profile',
-    // authMiddleware.authenticateProvider,
+    authMiddleware.authenticateUser,
     providerCtrl.updateProfile);
 
 router.post(
     providerBase + '/upload/image',
-    // authMiddleware.authenticateProvider,
+    authMiddleware.authenticateUser,
     imgUpload.single('image'),
     providerCtrl.uploadFile);
 
 router.get(
     providerBase + '/materials',
-    // authMiddleware.authenticateProvider,
+    authMiddleware.authenticateUser,
     providerCtrl.getOwnMaterials);
 
 router.get(
     providerBase + '/earnings',
-    // authMiddleware.authenticateProvider,
+    authMiddleware.authenticateUser,
     providerCtrl.getEarningsByMaterials);
 
 // ------------------------- admin area -----------------------------
 const adminBase = '/admin';
-router.post(
-    adminBase + '/login',
-    adminCtrl.login);
-
-router.post(
-    adminBase + '/logout',
-    // authMiddleware.authenticateAdmin,
-    adminCtrl.logout);
 
 router.post(
     adminBase + '/forgotPassword',
@@ -157,80 +141,92 @@ router.post(
 
 router.put(
     adminBase + '/profile',
-    // authMiddleware.authenticateAdmin,
+    authMiddleware.authenticateUser,
     adminCtrl.updateProfile);
 
 router.get(
     adminBase + '/initialData',
-    // authMiddleware.authenticateAdmin,
+    authMiddleware.authenticateUser,
     adminCtrl.initialData);
 
 router.get(
     adminBase + '/users/providers',
-    // authMiddleware.authenticateAdmin,
+    authMiddleware.authenticateUser,
     adminCtrl.searchProviders);
 
 router.get(
     adminBase + '/users/providers/:id',
-    // authMiddleware.authenticateAdmin,
+    authMiddleware.authenticateUser,
     adminCtrl.getProvider);
 
 router.post(
     adminBase + '/users/providers',
-    // authMiddleware.authenticateAdmin,
+    authMiddleware.authenticateUser,
     adminCtrl.createProvider);
 
 router.put(
     adminBase + '/users/providers/:id',
-    // authMiddleware.authenticateAdmin,
+    authMiddleware.authenticateUser,
     adminCtrl.updateProviderInfo);
 
 router.delete(
     adminBase + '/users/providers/:id',
-    // authMiddleware.authenticateAdmin,
+    authMiddleware.authenticateUser,
     adminCtrl.deleteProvider);
 
 router.post(
     adminBase + '/materials',
-    // authMiddleware.authenticateAdmin,
+    authMiddleware.authenticateUser,
     adminCtrl.createMaterial);
 
 router.get(
     adminBase + '/materials',
-    // authMiddleware.authenticateAdmin,
+    authMiddleware.authenticateUser,
     adminCtrl.searchMaterials);
 
 router.get(
     adminBase + '/materials/tags',
-    // authMiddleware.authenticateAdmin,
+    authMiddleware.authenticateUser,
     adminCtrl.getAllTags);
 
 router.get(
     adminBase + '/materials/:id',
-    // authMiddleware.authenticateAdmin,
+    authMiddleware.authenticateUser,
     adminCtrl.getMaterial);
 
 router.put(
     adminBase + '/materials/:id',
-    // authMiddleware.authenticateAdmin,
+    authMiddleware.authenticateUser,
     adminCtrl.updateMaterial);
 
 router.delete(
     adminBase + '/materials/:id',
-    // authMiddleware.authenticateAdmin,
+    authMiddleware.authenticateUser,
     adminCtrl.deleteMaterial);
 
 router.post(
     adminBase + '/upload/material',
-    // authMiddleware.authenticateAdmin,
+    authMiddleware.authenticateUser,
     materialUpload.single('material'),
     adminCtrl.uploadFile);
 
 router.post(
     adminBase + '/upload/image',
-    // authMiddleware.authenticateAdmin,
+    authMiddleware.authenticateUser,
     imgUpload.single('image'),
     adminCtrl.uploadFile);
+
+// ---------------------------- admin / provider login -----------------------------------
+const accountBase = '/account';
+
+router.post(
+    accountBase + '/login',
+    genericCtrl.adminProviderLogin);
+
+router.post(
+    accountBase + '/logout',
+    authMiddleware.authenticateUser,
+    adminCtrl.logout);
 
 // -------------------------------- media upload download section -------------------------
 const mediaBase = '/media';
