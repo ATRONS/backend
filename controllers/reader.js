@@ -58,8 +58,41 @@ ctrl.signup = function (req, res, next) {
 }
 
 ctrl.login = function (req, res, next) {
-    const secret = process.env.ENCR_SECRET_READER;
-    genericCtrl.login(req, res, next, secret, ReaderSchema);
+    const required = ['email', 'password'];
+
+    for (let key of required) {
+        if (!req.body[key] || !_.isString(req.body[key])) {
+            return failure(res, `${key} required`);
+        }
+    }
+
+    const email = req.body.email.trim().toLowerCase();
+    const password = req.body.password.trim();
+
+    ReaderSchema.findOne({ email: email }, (err, user) => {
+        if (err) return errorResponse(err, res);
+        if (!user) return failure(res, 'Email or password incorrect');
+
+        const passwordCorrect = user.isPasswordCorrect(password);
+        if (!passwordCorrect) return failure(res, 'Email or password incorrect');
+
+        const secret = process.env.ENCR_SECRET;
+        const tokenInfo = { userId: user._id, role: 'reader' };
+        jwtCtrl.createToken(tokenInfo, secret, (err, token) => {
+            if (err) return errorResponse(err, res);
+
+            user.addSessionId(token.sessionId);
+            user.save((err, saved) => {
+                if (err) return failure(res, 'Internal Error', 500);
+                const user_info = saved.toObject();
+                user_info.auth = undefined;
+                user_info.__v = undefined;
+                user_info.role = undefined;
+                const response = { token: token.token, user_info: saved };
+                success(res, response);
+            });
+        });
+    });
 }
 
 ctrl.logout = genericCtrl.logout;
