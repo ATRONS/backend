@@ -12,11 +12,7 @@ const logger = global.logger;
 
 const ctrl = {};
 
-ctrl.login = function (req, res, next) {
-    const secret = process.env.ENCR_SECRET_ADMIN;
-    genericCtrl.login(req, res, next, secret, AdminSchema);
-}
-
+ctrl.login = genericCtrl.adminProviderLogin;
 ctrl.logout = genericCtrl.logout;
 
 ctrl.forgotPassword = function (req, res, next) { res.end('admin forgot password') }

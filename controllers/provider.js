@@ -6,11 +6,7 @@ const { errorResponse, success, defaultHandler } = require('../helpers/response'
 
 const ctrl = {};
 
-ctrl.login = function (req, res, next) {
-    const secret = process.env.ENCR_SECRET_PROVIDER;
-    genericCtrl.login(req, res, next, secret, ProviderSchema);
-}
-
+ctrl.login = genericCtrl.adminProviderLogin;
 ctrl.logout = genericCtrl.logout;
 
 ctrl.forgotPassword = function (req, res, next) { res.end('provider forgot password') }
