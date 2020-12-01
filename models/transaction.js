@@ -145,4 +145,19 @@ TransactionSchema.statics.earningsByMaterials = function (matIds, callback) {
     ]).exec(callback);
 }
 
+TransactionSchema.statics.earningByMaterial = function (matId, callback) {
+    this.model(COLLECTION).aggregate([
+        {
+            $match: { material: mongoose.Types.ObjectId(matId) }
+        },
+        {
+            $group: {
+                _id: "$material",
+                total_earnings: { $sum: "$amount" },
+                total_sells: { $sum: 1 },
+            }
+        }
+    ]).exec(callback);
+}
+
 module.exports = mongoose.model(COLLECTION, TransactionSchema);
