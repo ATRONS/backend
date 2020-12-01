@@ -1,7 +1,7 @@
 const ReaderSchema = require('../models/users/reader');
 const MaterialSchema = require('../models/material');
 const TagSchema = require('../models/tag');
-const TransactionSchema = require('../models/transaction');
+const InvoiceSchema = require('../models/invoice');
 const uuid = require('uuid');
 const _ = require('lodash');
 
@@ -137,7 +137,7 @@ ctrl.purchaseMaterial = function (req, res, next) {
 
         const invoiceInfo = {
             amount: material.price.selling,
-            description: `Invoice for ${material.title}`,
+            description: `Invoice from Atrons for ${material.title}`,
             currency: "ETB",
             expires: expiresOn,
             tracenumber: uuid.v4(),
@@ -152,7 +152,7 @@ ctrl.purchaseMaterial = function (req, res, next) {
                 return failure(res, 'Could not create Invoice', 500);
             }
 
-            const transaction = TransactionSchema({
+            const newInvoice = InvoiceSchema({
                 reader: req.user._id,
                 provider: material.provider._id,
                 material: material._id,
@@ -172,7 +172,7 @@ ctrl.purchaseMaterial = function (req, res, next) {
                 invoice_dump: invoice,
             });
 
-            transaction.save(defaultHandler(res));
+            newInvoice.save(defaultHandler(res));
         });
     });
 }
