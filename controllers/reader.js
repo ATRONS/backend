@@ -39,8 +39,9 @@ ctrl.signup = function (req, res, next) {
         preferences: req.body.preferences,
     });
 
-    const secret = process.env.ENCR_SECRET_READER;
-    jwtCtrl.createToken({ userId: user._id }, secret, (err, token) => {
+    const secret = process.env.ENCR_SECRET;
+    const tokenInfo = { userId: user._id, role: 'reader' };
+    jwtCtrl.createToken(tokenInfo, secret, (err, token) => {
         if (err) return errorResponse(err, res);
 
         user.addSessionId(token.sessionId);
