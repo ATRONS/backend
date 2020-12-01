@@ -153,6 +153,13 @@ router.get(
     authMiddleware.isProvider,
     providerCtrl.getEarningsByMaterials);
 
+router.get(
+    providerBase + '/earningsPerDayPerMaterial',
+    authMiddleware.authenticateUser,
+    authMiddleware.isProvider,
+    providerCtrl.getEarningsByMaterialsBnDays);
+
+
 // ------------------------- admin area -----------------------------
 const adminBase = '/admin';
 
