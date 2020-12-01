@@ -3,6 +3,7 @@ const ProviderSchema = require('../models/users/provider');
 const MaterialSchema = require('../models/material');
 const ReaderSchema = require('../models/users/reader');
 const TagSchema = require('../models/tag');
+const TransactionSchema = require('../models/transaction');
 
 const mongoose = require('mongoose');
 const jwtCtrl = require('../auth/jwt');
@@ -239,7 +240,30 @@ ctrl.getProvider = function (req, res, next) {
 
 // ----------------------------- Material mgmt commons -----------------------------
 ctrl.getMaterial = function (req, res, next) {
-    MaterialSchema.getMaterial(req.params.id, defaultHandler(res));
+    asyncLib.parallel({
+        materialDetail: function (callback) {
+            MaterialSchema.getMaterial(req.params.id, callback);
+        },
+        sells: function (callback) {
+            TransactionSchema.earningByMaterial(req.params.id, callback);
+        },
+        downloads: function (callback) {
+            return callback(null, 15);
+        }
+    }, function (err, results) {
+        if (err) return errorResponse(err, res);
+
+        const response = results.materialDetail;
+        response.reports = results.sells.length ?
+            results.sells[0] :
+            {
+                total_earnings: 0,
+                total_sells: 0,
+            };
+        response.reports.downloads = results.downloads;
+
+        success(res, response);
+    });
 }
 
 ctrl.searchMaterials = function (req, res, next) {
