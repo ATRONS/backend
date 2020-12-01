@@ -9,7 +9,7 @@ const { failure } = require('../helpers/response');
 const middleware = {};
 
 middleware.authenticateUser = function (req, res, next) {
-    const authorization = req.headers['authorization'];
+    const authorization = req.headers['Authorization'] || req.headers['authorization'];
     if (!_.isString(authorization)) {
         return failure(res, 'unauthorized', 401);
     }
@@ -18,7 +18,7 @@ middleware.authenticateUser = function (req, res, next) {
     const secret = process.env.ENCR_SECRET;
     jwt.verifyToken(token, secret, (err, decoded) => {
         if (err) {
-            logger.err(err);
+            logger.error(err);
             return failure(res, 'unauthorized', 401);
         }
 
@@ -41,6 +41,21 @@ middleware.authenticateUser = function (req, res, next) {
             return next();
         });
     });
+}
+
+middleware.isAdmin = function (req, res, next) {
+    if (req.user && req.user.role === 'admin') return next();
+    return failure(res, 'unauthorized', 403);
+}
+
+middleware.isProvider = function (req, res, next) {
+    if (req.user && req.user.role === 'provider') return next();
+    return failure(res, 'unauthorized', 403);
+}
+
+middleware.isReader = function (req, res, next) {
+    if (req.user && req.user.role === 'reader') return next();
+    return failure(res, 'unauthorized', 403);
 }
 
 module.exports = middleware;
