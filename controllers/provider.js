@@ -30,35 +30,10 @@ ctrl.getOwnMaterials = function (req, res, next) {
     MaterialSchema.minifiedSearch(req.query, defaultHandler(res));
 }
 
-ctrl.getMaterial = function (req, res, next) {
-    asyncLib.parallel({
-        materialDetail: function (callback) {
-            MaterialSchema.getMaterial(req.params.id, callback);
-        },
-        sells: function (callback) {
-            TransactionSchema.earningByMaterial(req.params.id, callback);
-        },
-        downloads: function (callback) {
-            return callback(null, 15);
-        }
-    }, function (err, results) {
-        if (err) return errorResponse(err, res);
-
-        const response = results.materialDetail;
-        response.reports = results.sells.length ?
-            results.sells[0] :
-            {
-                total_earnings: 0,
-                total_sells: 0,
-            };
-        response.reports.downloads = results.downloads;
-
-        success(res, response);
-    });
-}
+ctrl.getMaterial = genericCtrl.getMaterial;
 
 ctrl.getEarningsByMaterials = function (req, res, next) {
-    req.query.provider = "5fb7ec05faf68e1b00fe7f3c"; //Bealu Girma's Id.
+    req.query.provider = req.user._id;
 
     MaterialSchema.minifiedSearch(req.query, (err, matResult) => {
         if (err) return errorResponse(err, res);
@@ -76,7 +51,7 @@ ctrl.getEarningsByMaterials = function (req, res, next) {
                     _id: material._id,
                     title: material.title,
                     subtitle: material.subtitle,
-                    amount: earning ? earning.amount : 0,
+                    total_earning: earning ? earning.amount : 0,
                     count: earning ? earning.count : 0,
                 };
             });
@@ -85,6 +60,10 @@ ctrl.getEarningsByMaterials = function (req, res, next) {
 
     });
 
+}
+
+ctrl.getEarningsByMaterialsBnDays = function (req, res, next) {
+    TransactionSchema.earningsByProviderBnDays(req.user._id, req.query, defaultHandler(res));
 }
 
 ctrl.uploadFile = genericCtrl.uploadFile;
