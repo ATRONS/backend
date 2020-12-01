@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 const axios = require('axios');
 const urls = require('../../helpers/constants/url');
+const InvoiceSchema = require('../../models/invoice');
+const TransactionSchema = require('../../models/transaction');
 
 const ctrl = {};
 
@@ -31,6 +33,8 @@ ctrl.createInvoice = function (invoiceInfo, callback) {
 }
 
 ctrl.webHook = function (req, res, next) {
+    res.end(); // won't be sending back any data.
+
     const payload = req.body;
     const hmac = crypto.createHmac('sha256', Buffer.from(process.env.HELLOCASH_CONNECTION_SECRET));
     const hmacHex = hmac.update(payload).digest('hex');
@@ -40,10 +44,54 @@ ctrl.webHook = function (req, res, next) {
 
     if (!hmacIsCorrect) {
         logger.warning('hmac incorrect, possible hack');
-        return res.end();
+        return;
     }
 
-    res.end();
+    const { tracenumber, status } = payload;
+    if (status !== 'PROCESSED') {
+        logger.info(`invoice with tracenumber ${tracenumber} sent status ${status}`);
+        return;
+    }
+
+    InvoiceSchema.findByTraceNumber(tracenumber, (err, invoice) => {
+        if (err) {
+            logger.error('Invoice fetch failed for tracenumber ' + tracenumber);
+            return;
+        }
+        if (!invoice) {
+            logger.info('Invoice does not exist, tracenumber ' + tracenumber);
+            return;
+        }
+
+        invoice.transaction_fee = payload.fee;
+        invoice.transaction_id = payload.id;
+        invoice.status = payload.status;
+        invoice.save((err, savedInvoice) => {
+            if (err) {
+                logger.error('Invoice save failed, tracenumber ' + tracenumber);
+                return;
+            }
+
+            logger.debug('invoice save successfull, tracenumber ' + tracenumber);
+
+            const transaction = TransactionSchema({
+                reader: savedInvoice.reader,
+                provider: savedInvoice.provider,
+                material: savedInvoice.material,
+                amount: savedInvoice.amount,
+                transaction_fee: savedInvoice.transaction_fee,
+            });
+
+            transaction.save((err, savedTransaction) => {
+                if (err) {
+                    logger.error('transaction save failed for tracenumber ' + tracenumber);
+                    return;
+                }
+                logger.debug('transaction save successfull, tracenumber ' + tracenumber);
+            })
+
+        })
+    });
 }
 
 module.exports = ctrl;
