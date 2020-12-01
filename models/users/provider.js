@@ -121,6 +121,8 @@ ProviderSchema.statics.search = function (filters, callback) {
         query.is_company = type == 'company';
     }
 
+    if (filters.provides) query.provides = filters.provides;
+
     query['auth.deleted'] = false;
 
     const that = this;
@@ -128,7 +130,7 @@ ProviderSchema.statics.search = function (filters, callback) {
         providers: function (asyncCallback) {
             that.model(COLLECTION)
                 .find(query)
-                .select('display_name legal_name avatar_url')
+                .select('display_name legal_name avatar_url about')
                 .skip(page * LIMIT)
                 .limit(LIMIT)
                 .lean()
