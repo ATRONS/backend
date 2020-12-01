@@ -10,22 +10,8 @@ const TransactionSchema = mongoose.Schema({
     material: { type: mongoose.Types.ObjectId, required: true, index: true },
 
     amount: { type: Number, required: true, min: 0 },
-    currency: { type: String, required: true },
-    payer: { type: String, required: true, index: true },
-    receiver: { type: String, required: true },
-    date: { type: Date, required: true, index: true },
-    expires: { type: Date, required: true },
-
-    invoice_id: { type: String, required: true, index: true },
-    invoice_code: { type: String },
-    transaction_id: { type: String, sparse: true },
     transaction_fee: { type: Number, default: 0 },
-    tracenumber: { type: String, sparse: true },
-    status: { type: String, required: true },
-
-    // the invoice object as received from the payment service
-    invoice_dump: { type: mongoose.Schema.Types.Mixed, required: true },
-    transaction_dump: { type: mongoose.Schema.Types.Mixed },
+    currency: { type: String, required: true },
 }, {
     timestamps: {
         createdAt: 'created_at',
