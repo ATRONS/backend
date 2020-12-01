@@ -121,7 +121,9 @@ ctrl.getFeaturedMaterials = function (req, res, next) { res.end('reader get feat
 
 ctrl.searchMaterials = genericCtrl.searchMaterials;
 
-ctrl.getMaterial = genericCtrl.getMaterial;
+ctrl.getMaterial = function (req, res, next) {
+    MaterialSchema.getMaterial(req.params.id, defaultHandler(res));
+}
 
 ctrl.purchaseMaterial = function (req, res, next) {
     if (!validator.isPhoneNumber(req.body.phone)) {
