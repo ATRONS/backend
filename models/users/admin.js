@@ -15,7 +15,6 @@ const AdminSchema = mongoose.Schema({
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
     avatar_url: { type: String },
 
-    // role: { type: mongoose.Schema.Types.ObjectId, ref: 'roles', required: true },
     auth: { type: AuthSchema, required: true },
 }, {
     timestamps: {
@@ -26,13 +25,6 @@ const AdminSchema = mongoose.Schema({
 });
 
 AdminSchema.path('email').validate(validator.isEmail, 'Email invalid');
-
-const autoPopulateRole = function (next) {
-    this.populate('role', 'name description _id');
-    next();
-}
-
-AdminSchema.pre('findOne', autoPopulateRole).pre('find', autoPopulateRole);
 
 AdminSchema.pre('save', function (next) {
     const user = this;
