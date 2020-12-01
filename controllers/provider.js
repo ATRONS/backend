@@ -2,6 +2,7 @@ const ProviderSchema = require('../models/users/provider');
 const MaterialSchema = require('../models/material');
 const TransactionSchema = require('../models/transaction');
 const genericCtrl = require('./generic');
+const asyncLib = require('async');
 const { errorResponse, success, defaultHandler } = require('../helpers/response');
 
 const ctrl = {};
@@ -25,8 +26,35 @@ ctrl.initialData = function (req, res, next) {
 }
 
 ctrl.getOwnMaterials = function (req, res, next) {
-    req.query.provider = "5fb7ec05faf68e1b00fe7f3c"; //Bealu Girma's Id.
+    req.query.provider = req.user._id;
     MaterialSchema.minifiedSearch(req.query, defaultHandler(res));
+}
+
+ctrl.getMaterial = function (req, res, next) {
+    asyncLib.parallel({
+        materialDetail: function (callback) {
+            MaterialSchema.getMaterial(req.params.id, callback);
+        },
+        sells: function (callback) {
+            TransactionSchema.earningByMaterial(req.params.id, callback);
+        },
+        downloads: function (callback) {
+            return callback(null, 15);
+        }
+    }, function (err, results) {
+        if (err) return errorResponse(err, res);
+
+        const response = results.materialDetail;
+        response.reports = results.sells.length ?
+            results.sells[0] :
+            {
+                total_earnings: 0,
+                total_sells: 0,
+            };
+        response.reports.downloads = results.downloads;
+
+        success(res, response);
+    });
 }
 
 ctrl.getEarningsByMaterials = function (req, res, next) {
