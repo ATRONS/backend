@@ -65,6 +65,8 @@ const ProviderSchema = mongoose.Schema({
     }
 });
 
+ProviderSchema.index({ created_at: 1 });
+
 ProviderSchema.path('email').validate(validator.isEmail, 'Email invalid');
 
 ProviderSchema.pre('save', function (next) {

@@ -79,6 +79,7 @@ const MaterialSchema = mongoose.Schema({
 });
 
 MaterialSchema.index({ title: 'text', subtitle: 'text', ISBN: 'text' });
+MaterialSchema.index({ created_at: 1 });
 
 MaterialSchema.pre('save', function (next) {
     // do price validation in here.
@@ -150,6 +151,7 @@ MaterialSchema.statics.search = function (filters, callback) {
             that.model(COLLECTION)
                 .find(query)
                 .select('type title subtitle cover_img_url ISBN')
+                .sort({ created_at: -1 })
                 .populate('provider', { legal_name: 1, display_name: 1 })
                 .skip(page * LIMIT)
                 .limit(LIMIT)
