@@ -31,6 +31,8 @@ ctrl.signup = function (req, res, next) {
         lastname: req.body.lastname,
         email: req.body.email,
         gender: req.body.gender,
+        key: jwtCtrl.getRandomBytes(32),
+        iv: jwtCtrl.getRandomBytes(16),
         auth: {
             password: req.body.password,
             verify_email_hash: jwtCtrl.getRandomBytes(),
