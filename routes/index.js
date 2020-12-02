@@ -276,6 +276,8 @@ const mediaBase = '/media';
 
 router.get(
     mediaBase + '/materials/:id',
+    authMiddleware.authenticateUser,
+    authMiddleware.isReader,
     genericCtrl.downloadFile('materials'));
 
 router.get(
