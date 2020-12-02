@@ -3,8 +3,8 @@ const crypto = require('crypto');
 
 const ctrl = {};
 
-ctrl.getRandomBytes = function () {
-    return crypto.randomBytes(24).toString('hex');
+ctrl.getRandomBytes = function (length = 48) {
+    return crypto.randomBytes(Math.floor(length / 2)).toString('hex');
 }
 
 ctrl.createToken = function (payload, secret, callback) {
