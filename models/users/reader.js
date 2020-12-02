@@ -16,6 +16,9 @@ const ReaderSchema = mongoose.Schema({
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
     avatar_url: { type: String },
 
+    key: { type: String, required: true, minlength: 32, maxlength: 32 },
+    iv: { type: String, require: true, minlength: 16, maxlength: 16 },
+
     auth: { type: AuthSchema, required: true },
 
     preferences: {
