@@ -6,12 +6,14 @@ const COLLECTION = 'transactions';
 const LIMIT = 10;
 
 const TransactionSchema = mongoose.Schema({
-    reader: { type: mongoose.Types.ObjectId, required: true, ref: 'readers', index: true },
+    reader: { type: mongoose.Types.ObjectId, ref: 'readers', sparse: true },
     provider: { type: mongoose.Types.ObjectId, required: true, ref: 'providers', index: true },
-    material: { type: mongoose.Types.ObjectId, required: true, ref: 'materials', index: true },
+    material: { type: mongoose.Types.ObjectId, ref: 'materials', sparse: true },
+    type: { type: String, required: true, enum: ['withdrawal', 'purchase'] },
 
     amount: { type: Number, required: true, min: 0 },
     transaction_fee: { type: Number, default: 0 },
+    transaction_id: { type: String, sparse: true },
     currency: { type: String, required: true },
 }, {
     timestamps: {
@@ -168,8 +170,6 @@ TransactionSchema.statics.earningsByProviderBnDays = function (provider, filters
 
     const start = luxon.DateTime.fromISO(filters.startDate);
     const end = luxon.DateTime.fromISO(filters.endDate);
-    console.log(start.valueOf());
-    console.log(end.valueOf());
 
     if (_.isNaN(start.valueOf()) || _.isNaN(end.valueOf())) {
         return callback({ custom: 'Invalid startDate or endDate', status: 400 });
@@ -189,7 +189,7 @@ TransactionSchema.statics.earningsByProviderBnDays = function (provider, filters
     this.model(COLLECTION)
         .find(query)
         .sort({ createdAt: 1 })
-        .populate('material', { title: 1, subtitle: 1, _id: 1 })
+        .populate('material', { title: 1, subtitle: 1, _id: 1, price: 1 })
         .lean()
         .exec((err, transactions) => {
             if (err) return callback(err);
@@ -219,6 +219,7 @@ TransactionSchema.statics.earningsByProviderBnDays = function (provider, filters
                         _id: '',
                         earning: 0,
                         number_of_items_sold: 0,
+                        price: null,
                     };
                     let transactions = perDay[date][matId];
                     for (trans of transactions) {
@@ -227,6 +228,7 @@ TransactionSchema.statics.earningsByProviderBnDays = function (provider, filters
                         material.subtitle = trans.material.subtitle;
                         material._id = trans.material._id;
                         material.number_of_items_sold++;
+                        material.price = trans.material.price;
                     }
                     aDaysTransactions.push(material);
                 }
