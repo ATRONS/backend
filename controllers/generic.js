@@ -199,11 +199,7 @@ ctrl.downloadFile = function (bucketName) {
 
             const fileStream = bucket.openDownloadStream(id);
             if (bucketName == 'materials') {
-                // const keyIvPair = encrypt.generateEncrKeyAndIV();
-                const keyIvPair = {
-                    key: "abcdefghijklmnopqrstuvwxyzabcdef",
-                    iv: "abcdefghijklmnop",
-                }
+                const keyIvPair = { key: req.user.key, iv: req.user.iv };
 
                 encrypt.encryptAndPipe(fileStream, res, keyIvPair, (err) => {
                     if (err) {
@@ -213,6 +209,8 @@ ctrl.downloadFile = function (bucketName) {
                 }).on('error', (err) => {
                     logger.error(err);
                     return failure(res, 'Internal Error', 500);
+                }).on('finish', () => {
+                    console.log('donwload finished herer');
                 });
             } else {
                 fileStream.pipe(res).on('error', function (error) {
