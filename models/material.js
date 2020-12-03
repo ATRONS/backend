@@ -7,12 +7,12 @@ const COLLECTION = 'materials';
 const LIMIT = 10;
 
 const FileSchema = mongoose.Schema({
-    id: { type: mongoose.Types.ObjectId, required: true },
+    id: { type: mongoose.Types.ObjectId, required: true, index: true },
     size: { type: Number, required: true, min: 1 },
     mimetype: { type: String, required: true },
     contentType: { type: String, required: true },
     url: { type: String, required: true },
-});
+}, { _id: false });
 
 const MaterialSchema = mongoose.Schema({
     type: {
@@ -95,6 +95,16 @@ MaterialSchema.statics.getMaterial = function (oId, callback) {
         .select('-__v -deleted')
         .populate('tags', { __v: 0 })
         .populate("provider", { display_name: 1 })
+        .lean()
+        .exec(callback);
+}
+
+MaterialSchema.statics.getMaterialByFileId = function (fileId, callback) {
+    if (!mongoose.isValidObjectId(fileId)) return callback({ custom: 'Invalid Id', status: 400 });
+
+    this.model(COLLECTION)
+        .findOne({ 'file.id': fileId })
+        .select('_id provider')
         .lean()
         .exec(callback);
 }
