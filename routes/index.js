@@ -98,6 +98,18 @@ router.post(
     readerCtrl.purchaseMaterial);
 
 router.get(
+    readerBase + '/materials/:id/ratings',
+    authMiddleware.authenticateUser,
+    authMiddleware.isReader,
+    readerCtrl.getMaterialRatings);
+
+router.put(
+    readerBase + '/materials/:id/ratings',
+    authMiddleware.authenticateUser,
+    authMiddleware.isReader,
+    readerCtrl.rateMaterial);
+
+router.get(
     readerBase + '/providers',
     authMiddleware.authenticateUser,
     authMiddleware.isReader,
@@ -136,6 +148,18 @@ router.post(
     providerCtrl.uploadFile);
 
 router.get(
+    providerBase + '/requests',
+    authMiddleware.authenticateUser,
+    authMiddleware.isProvider,
+    providerCtrl.getOwnRequests);
+
+router.post(
+    providerBase + '/requests',
+    authMiddleware.authenticateUser,
+    authMiddleware.isProvider,
+    providerCtrl.createRequest);
+
+router.get(
     providerBase + '/materials',
     authMiddleware.authenticateUser,
     authMiddleware.isProvider,
@@ -146,6 +170,18 @@ router.get(
     authMiddleware.authenticateUser,
     authMiddleware.isProvider,
     providerCtrl.getMaterial);
+
+router.get(
+    providerBase + '/materials/:id/ratings',
+    authMiddleware.authenticateUser,
+    authMiddleware.isProvider,
+    providerCtrl.getMaterialRatings);
+
+router.get(
+    providerBase + '/materials/:id/report/sells',
+    authMiddleware.authenticateUser,
+    authMiddleware.isProvider,
+    providerCtrl.getMaterialSellsReport);
 
 router.get(
     providerBase + '/earnings',
@@ -190,6 +226,12 @@ router.get(
     authMiddleware.authenticateUser,
     authMiddleware.isAdmin,
     adminCtrl.searchProviders);
+
+router.get(
+    adminBase + '/users/providers/requests',
+    authMiddleware.authenticateUser,
+    authMiddleware.isAdmin,
+    adminCtrl.getRequests);
 
 router.get(
     adminBase + '/users/providers/:id',
@@ -239,6 +281,7 @@ router.get(
     authMiddleware.isAdmin,
     adminCtrl.getMaterial);
 
+
 router.put(
     adminBase + '/materials/:id',
     authMiddleware.authenticateUser,
@@ -250,6 +293,12 @@ router.delete(
     authMiddleware.authenticateUser,
     authMiddleware.isAdmin,
     adminCtrl.deleteMaterial);
+
+router.get(
+    adminBase + '/materials/:id/ratings',
+    authMiddleware.authenticateUser,
+    authMiddleware.isAdmin,
+    adminCtrl.getMaterialRatings);
 
 router.post(
     adminBase + '/upload/material',
