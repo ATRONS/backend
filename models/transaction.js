@@ -5,16 +5,35 @@ const luxon = require('luxon');
 const COLLECTION = 'transactions';
 const LIMIT = 10;
 
-const TransactionSchema = mongoose.Schema({
-    reader: { type: mongoose.Types.ObjectId, ref: 'readers', sparse: true },
-    provider: { type: mongoose.Types.ObjectId, required: true, ref: 'providers', index: true },
-    material: { type: mongoose.Types.ObjectId, ref: 'materials', sparse: true },
-    type: { type: String, required: true, enum: ['withdrawal', 'purchase'] },
+const types = { WITHDRAWAL: 'Withdrawal', PURCHASE: 'Purchase', SERVICEFEE: 'Service fee' };
 
+const TransactionSchema = mongoose.Schema({
+    type: {
+        type: String,
+        required: true,
+        enum: Object.keys(types),
+    },
+    description: { type: String, required: true },
     amount: { type: Number, required: true, min: 0 },
-    transaction_fee: { type: Number, default: 0 },
-    transaction_id: { type: String, sparse: true },
-    currency: { type: String, required: true },
+
+    provider: { type: mongoose.Types.ObjectId, required: true, ref: 'providers', index: true },
+
+    // optional fields
+    reader: {
+        type: mongoose.Types.ObjectId,
+        ref: 'readers',
+        sparse: true,
+        required: () => this.type === types.PURCHASE
+    },
+    material: {
+        type: mongoose.Types.ObjectId,
+        ref: 'materials',
+        sparse: true,
+        required: () => this.type === types.SERVICEFEE
+    },
+
+    tracenumber: { type: String, required: true, index: true },
+    currency: { type: String, default: 'ETB' },
 }, {
     timestamps: {
         createdAt: 'created_at',
@@ -163,16 +182,13 @@ TransactionSchema.statics.earningByMaterial = function (matId, callback) {
     ]).exec(callback);
 }
 
-TransactionSchema.statics.earningsByProviderBnDays = function (provider, filters, callback) {
-    if (!_.isString(filters.startDate) || !_.isString(filters.endDate)) {
-        return callback({ custom: 'startDate and endDate query params required', status: 400 });
-    }
-
-    const start = luxon.DateTime.fromISO(filters.startDate);
-    const end = luxon.DateTime.fromISO(filters.endDate);
+TransactionSchema.statics.earningsByProviderBnDays = function (provider, filters = {}, callback) {
+    let start = luxon.DateTime.fromISO(filters.startDate);
+    let end = luxon.DateTime.fromISO(filters.endDate);
 
     if (_.isNaN(start.valueOf()) || _.isNaN(end.valueOf())) {
-        return callback({ custom: 'Invalid startDate or endDate', status: 400 });
+        end = luxon.DateTime.utc().endOf('day');
+        start = end.minus(luxon.Duration.fromObject({ days: 7 })).startOf('day');
     }
 
     if (start.valueOf() > end.valueOf()) {
@@ -188,7 +204,7 @@ TransactionSchema.statics.earningsByProviderBnDays = function (provider, filters
     }
     this.model(COLLECTION)
         .find(query)
-        .sort({ createdAt: 1 })
+        .sort({ created_at: 1 })
         .populate('material', { title: 1, subtitle: 1, _id: 1, price: 1 })
         .lean()
         .exec((err, transactions) => {
@@ -240,6 +256,35 @@ TransactionSchema.statics.earningsByProviderBnDays = function (provider, filters
 
             return callback(null, response);
         });
+}
+
+TransactionSchema.statics.getProviderTransactions = function (provider, filters, callback) {
+    let start = luxon.DateTime.fromISO(filters.startDate);
+    let end = luxon.DateTime.fromISO(filters.endDate);
+
+    if (_.isNaN(start.valueOf()) || _.isNaN(end.valueOf())) {
+        end = luxon.DateTime.utc().endOf('day');
+        start = end.minus(luxon.Duration.fromObject({ days: 10 })).startOf('day');
+    }
+
+    if (start.valueOf() > end.valueOf()) {
+        return callback({ custom: 'startDate cannot be greater than endDate', status: 400 });
+    }
+
+    const query = {
+        provider: provider,
+        created_at: {
+            $gte: start,
+            $lte: end,
+        }
+    }
+
+    this.model(COLLECTION)
+        .find(query)
+        .sort({ created_at: -1 })
+        .populate('material', { title: 1, subtitle: 1, _id: 1 })
+        .lean()
+        .exec(callback);
 }
 
 module.exports = mongoose.model(COLLECTION, TransactionSchema);
