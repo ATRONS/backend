@@ -88,9 +88,8 @@ ctrl.webHook = function (req, res, next) {
                     return;
                 }
                 logger.debug('transaction save successfull, tracenumber ' + tracenumber);
-            })
-
-        })
+            });
+        });
     });
 }
 
