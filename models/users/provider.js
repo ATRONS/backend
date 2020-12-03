@@ -10,7 +10,6 @@ const SALT_FACTOR = 10;
 const LIMIT = 10;
 
 const AuthSchema = require('./sub/auth');
-const { filter } = require('lodash');
 
 const AuthorSchema = mongoose.Schema({
     dob: { type: Date, required: true },
@@ -26,11 +25,11 @@ const CompanySchema = mongoose.Schema({
 }, { _id: false });
 
 const ProviderSchema = mongoose.Schema({
-    legal_name: { type: String, required: true, trim: true },
+    legal_name: { type: String, required: true, trim: true, index: true },
     display_name: { type: String, required: true, trim: true, index: true },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
     phone: { type: String, required: true, trim: true },
-    avatar_url: { type: String },
+    avatar_url: { type: String, required: true },
 
     is_company: { type: Boolean, required: true, },
 
@@ -47,7 +46,8 @@ const ProviderSchema = mongoose.Schema({
     provides: {
         type: String,
         enum: ['BOOK', 'MAGAZINE', 'NEWSPAPER'],
-        sparse: true,
+        required: true,
+        index: true,
     },
 
     about: { type: String, default: '' },
@@ -123,7 +123,9 @@ ProviderSchema.statics.search = function (filters, callback) {
         query.is_company = type == 'company';
     }
 
-    if (filters.provides) query.provides = filters.provides;
+    if (_.isString(filters.provides)) {
+        query.provides = _.toUpper(filters.provides).trim();
+    }
 
     query['auth.deleted'] = false;
 
@@ -133,6 +135,7 @@ ProviderSchema.statics.search = function (filters, callback) {
             that.model(COLLECTION)
                 .find(query)
                 .select('display_name legal_name avatar_url about')
+                .sort({ created_at: 1 })
                 .skip(page * LIMIT)
                 .limit(LIMIT)
                 .lean()
