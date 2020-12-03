@@ -15,4 +15,8 @@ const DownloadSchema = mongoose.Schema({
     }
 });
 
+DownloadSchema.statics.createDownload = function (downloadInfo, callback) {
+    this.model(COLLECTION).create(downloadInfo, callback);
+}
+
 module.exports = mongoose.model(COLLECTION, DownloadSchema);
