@@ -5,10 +5,10 @@ const luxon = require('luxon');
 const COLLECTION = 'transactions';
 const LIMIT = 10;
 
-const types = { WITHDRAWAL: 'Withdrawal', PURCHASE: 'Purchase', SERVICEFEE: 'Service fee' };
+const types = { WITHDRAWAL: 'WITHDRAWAL', PURCHASE: 'PURCHASE', SERVICEFEE: 'SERVICE_FEE' };
 
 const TransactionSchema = mongoose.Schema({
-    type: {
+    kind: {
         type: String,
         required: true,
         enum: Object.keys(types),
@@ -23,13 +23,13 @@ const TransactionSchema = mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: 'readers',
         sparse: true,
-        required: () => this.type === types.PURCHASE
+        required: () => this.kind === types.PURCHASE
     },
     material: {
         type: mongoose.Types.ObjectId,
         ref: 'materials',
         sparse: true,
-        required: () => this.type === types.SERVICEFEE
+        required: () => this.kind === types.SERVICEFEE
     },
 
     tracenumber: { type: String, required: true, index: true },
@@ -44,7 +44,19 @@ const TransactionSchema = mongoose.Schema({
 
 TransactionSchema.index({ created_at: 1 });
 
+TransactionSchema.statics.readerOwnsMaterial = function (readerId, matId, callback) {
+    this.model(COLLECTION)
+        .findOne({ reader: readerId, material: matId, type: types.PURCHASE })
+        .select('_id')
+        .exec((err, transaction) => {
+            if (err) return callback(err);
+            return callback(null, transaction !== null);
+        });
+}
+
 TransactionSchema.statics.getSellsReportByProvider = function (provider, lastXDays, callback) {
+    if (!mongoose.isValidObjectId(provider)) return callback({ custom: 'Invalid Id', status: 400 });
+
     const today = luxon.DateTime.utc().endOf("day");
     const xdaysAgo = today
         .minus(luxon.Duration.fromObject({ days: 6 }))
@@ -66,7 +78,7 @@ TransactionSchema.statics.getSellsReportByProvider = function (provider, lastXDa
                         year: { $year: "$created_at" }
                     },
                     total_amount: { $sum: "$amount" },
-                    total_transactions: { $sum: 1 }
+                    total_sells: { $sum: 1 }
                 }
             }
         ])
@@ -96,7 +108,7 @@ TransactionSchema.statics.getSellsReportByProvider = function (provider, lastXDa
                             year: s.year
                         },
                         total_amount: 0,
-                        total_transactions: 0
+                        total_sells: 0
                     });
                 }
 
@@ -113,6 +125,8 @@ TransactionSchema.statics.getSellsReportByProvider = function (provider, lastXDa
 }
 
 TransactionSchema.statics.getBestSellersByProvider = function (provider, callback) {
+    if (!mongoose.isValidObjectId(provider)) return callback({ custom: 'Invalid Id', status: 400 });
+
     this.model(COLLECTION).aggregate([
         {
             $match: {
@@ -132,6 +146,8 @@ TransactionSchema.statics.getBestSellersByProvider = function (provider, callbac
 }
 
 TransactionSchema.statics.getTotalSellsByProvider = function (provider, callback) {
+    if (!mongoose.isValidObjectId(provider)) return callback({ custom: 'Invalid Id', status: 400 });
+
     this.model(COLLECTION).aggregate([
         {
             $match: {
@@ -141,15 +157,26 @@ TransactionSchema.statics.getTotalSellsByProvider = function (provider, callback
         {
             $group: {
                 _id: "$provider",
-                sells_amount: { $sum: "$amount" },
-                sells_count: { $sum: 1 },
+                total_earnings: { $sum: "$amount" },
+                total_sells: { $sum: 1 },
             }
         },
         { $sort: { _id: -1, }, },
-    ]).exec(callback);
+    ]).exec((err, report) => {
+        if (err) return callback(err);
+
+        const response = report.length ? report[0] : {
+            total_earnings: 0,
+            total_sells: 0,
+        };
+
+        return callback(null, response);
+    });
 }
 
 TransactionSchema.statics.earningsByMaterials = function (matIds, callback) {
+    if (!_.isArray(matIds)) return callback({ custom: 'Array of ObjectIds expected', status: 400 });
+
     this.model(COLLECTION).aggregate([
         {
             $match: {
@@ -168,13 +195,58 @@ TransactionSchema.statics.earningsByMaterials = function (matIds, callback) {
 }
 
 TransactionSchema.statics.earningByMaterial = function (matId, callback) {
+    if (!mongoose.isValidObjectId(matId)) return callback({ custom: 'Invalid Id', status: 400 });
+
     this.model(COLLECTION).aggregate([
         {
             $match: { material: mongoose.Types.ObjectId(matId) }
         },
         {
             $group: {
-                _id: "$material",
+                _id: {
+                    day: { $dayOfMonth: "$created_at" },
+                    month: { $month: "$created_at" },
+                    year: { $year: "$created_at" }
+                },
+                total_earnings: { $sum: "$amount" },
+                total_sells: { $sum: 1 }
+            }
+        }
+    ]).exec(callback);
+}
+
+TransactionSchema.statics.earningByMaterialInDuration = function (matId, filters, callback) {
+    if (!mongoose.isValidObjectId(matId)) return callback({ custom: 'Invalid Id', status: 400 });
+
+    const end = luxon.DateTime.utc().endOf('day');
+    let duration = luxon.Duration.fromObject({ days: 20 });
+
+    if (_.isString(filters.period)) {
+        const period = _.toLower(filters.period).trim();
+        if (period == 'month') {
+            duration = luxon.Duration.fromObject({ days: 29 });
+        }
+    }
+
+    const start = end.minus(duration).startOf('day');
+
+    this.model(COLLECTION).aggregate([
+        {
+            $match: {
+                material: mongoose.Types.ObjectId(matId),
+                created_at: {
+                    $gte: start,
+                    $lte: end,
+                }
+            }
+        },
+        {
+            $group: {
+                _id: {
+                    day: { $dayOfMonth: "$created_at" },
+                    month: { $month: "$created_at" },
+                    year: { $year: "$created_at" }
+                },
                 total_earnings: { $sum: "$amount" },
                 total_sells: { $sum: 1 },
             }
@@ -183,6 +255,8 @@ TransactionSchema.statics.earningByMaterial = function (matId, callback) {
 }
 
 TransactionSchema.statics.earningsByProviderBnDays = function (provider, filters = {}, callback) {
+    if (!mongoose.isValidObjectId(provider)) return callback({ custom: 'Invalid Id', status: 400 });
+
     let start = luxon.DateTime.fromISO(filters.startDate);
     let end = luxon.DateTime.fromISO(filters.endDate);
 
@@ -259,6 +333,8 @@ TransactionSchema.statics.earningsByProviderBnDays = function (provider, filters
 }
 
 TransactionSchema.statics.getProviderTransactions = function (provider, filters, callback) {
+    if (!mongoose.isValidObjectId(provider)) return callback({ custom: 'Invalid Id', status: 400 });
+
     let start = luxon.DateTime.fromISO(filters.startDate);
     let end = luxon.DateTime.fromISO(filters.endDate);
 
