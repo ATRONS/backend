@@ -1,6 +1,6 @@
-const ProviderSchema = require('../models/users/provider');
 const MaterialSchema = require('../models/material');
 const TransactionSchema = require('../models/transaction');
+const RequestSchema = require('../models/request');
 const genericCtrl = require('./generic');
 const asyncLib = require('async');
 const { errorResponse, success, defaultHandler } = require('../helpers/response');
@@ -25,12 +25,24 @@ ctrl.initialData = function (req, res, next) {
     success(res, response);
 }
 
+ctrl.createRequest = function (req, res, next) {
+    req.body.provider = req.user._id;
+    RequestSchema.createRequest(req.body, defaultHandler(res));
+}
+
+ctrl.getOwnRequests = function (req, res, next) {
+    req.query.provider = req.user._id;
+    RequestSchema.getRequests(req.query, defaultHandler(res));
+}
+
 ctrl.getOwnMaterials = function (req, res, next) {
     req.query.provider = req.user._id;
-    MaterialSchema.minifiedSearch(req.query, defaultHandler(res));
+    MaterialSchema.search(req.query, defaultHandler(res));
 }
 
 ctrl.getMaterial = genericCtrl.getMaterial;
+
+ctrl.getMaterialRatings = genericCtrl.getMaterialRatings;
 
 ctrl.getEarningsByMaterials = function (req, res, next) {
     req.query.provider = req.user._id;
@@ -64,6 +76,10 @@ ctrl.getEarningsByMaterials = function (req, res, next) {
 
 ctrl.getEarningsByMaterialsBnDays = function (req, res, next) {
     TransactionSchema.earningsByProviderBnDays(req.user._id, req.query, defaultHandler(res));
+}
+
+ctrl.getMaterialSellsReport = function (req, res, next) {
+    TransactionSchema.earningByMaterialInDuration(req.params.id, req.query, defaultHandler(res));
 }
 
 ctrl.getTransactions = function (req, res, next) {
