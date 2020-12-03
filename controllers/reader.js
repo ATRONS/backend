@@ -87,7 +87,10 @@ ctrl.login = function (req, res, next) {
 
             user.addSessionId(token.sessionId);
             user.save((err, saved) => {
-                if (err) return failure(res, 'Internal Error', 500);
+                if (err) {
+                    loggers.error(err);
+                    return failure(res, 'Internal Error', 500);
+                }
                 const user_info = saved.toObject();
                 user_info.auth = undefined;
                 user_info.__v = undefined;
