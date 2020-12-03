@@ -81,12 +81,6 @@ const MaterialSchema = mongoose.Schema({
 MaterialSchema.index({ title: 'text', subtitle: 'text', ISBN: 'text' });
 MaterialSchema.index({ created_at: 1 });
 
-MaterialSchema.pre('save', function (next) {
-    // do price validation in here.
-    console.log('material schema pre save called');
-    return next();
-});
-
 MaterialSchema.statics.getMaterial = function (oId, callback) {
     if (!mongoose.isValidObjectId(oId)) return callback({ custom: 'Invalid Id', status: 400 });
 
@@ -139,6 +133,38 @@ MaterialSchema.statics.updateMaterial = function (oId, update, callback) {
         });
 }
 
+MaterialSchema.statics.updateRating = function (matId, ratingInfo, callback) {
+    if (!mongoose.isValidObjectId(matId)) return callback({ custom: 'Invalid Id', status: 400 });
+
+    const { isNew, oldRating, newRating } = ratingInfo;
+
+    this.model(COLLECTION)
+        .findOne({ _id: matId })
+        .exec((err, material) => {
+            if (err) return callback(err);
+            if (!material) return callback({ custom: 'Material Not found', status: 404 });
+
+            const ratingObj = material.toObject().rating;
+            if (isNew) {
+                let voteSum = (ratingObj.value * ratingObj.voters) + newRating;
+                ratingObj.voters += 1;
+                ratingObj.value = voteSum / ratingObj.voters;
+                ratingObj.groups[newRating - 1] += 1
+            } else {
+                let voteSum = (ratingObj.value * ratingObj.voters) - oldRating + newRating;
+                ratingObj.value = voteSum / material.rating.voters;
+                ratingObj.groups[oldRating - 1] -= 1;
+                ratingObj.groups[newRating - 1] += 1;
+            }
+
+            material.rating = ratingObj;
+            material.save((err, savedMat) => {
+                if (err) return callback(err);
+                return callback(null, savedMat.rating);
+            });
+        });
+}
+
 MaterialSchema.statics.search = function (filters, callback) {
     const page = isNaN(Number(filters.page)) ? 0 : Math.abs(Number(filters.page));
 
@@ -160,7 +186,7 @@ MaterialSchema.statics.search = function (filters, callback) {
         materials: function (asyncCallback) {
             that.model(COLLECTION)
                 .find(query)
-                .select('type title subtitle cover_img_url ISBN')
+                .select('type title subtitle cover_img_url ISBN rating price edition')
                 .sort({ created_at: -1 })
                 .populate('provider', { legal_name: 1, display_name: 1 })
                 .skip(page * LIMIT)
