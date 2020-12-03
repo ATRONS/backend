@@ -1,14 +1,12 @@
-const { failure, success, errorResponse } = require("../helpers/response");
-const AdminSchema = require('../models/users/admin');
+const { failure, success, errorResponse, defaultHandler } = require("../helpers/response");
 const ProviderSchema = require('../models/users/provider');
 const MaterialSchema = require('../models/material');
 const TransactionSchema = require('../models/transaction');
+const RequestSchema = require('../models/request');
 const genericCtrl = require('./generic');
 const asyncLib = require('async');
 const _ = require('lodash');
 const ObjectId = require("mongoose").Types.ObjectId;
-
-const logger = global.logger;
 
 const ctrl = {};
 
@@ -37,6 +35,8 @@ ctrl.createProvider = function (req, res, next) {
         email: req.body.email,
         phone: req.body.phone,
         about: req.body.about,
+        provides: req.body.provides,
+        avatar_url: req.body.avatar_url,
         auth: {
             password: req.body.password,
         },
@@ -47,6 +47,7 @@ ctrl.createProvider = function (req, res, next) {
 
     provider.save((err, result) => {
         if (err) return errorResponse(err, res);
+        result.auth = undefined;
         return success(res, result);
     });
 
@@ -95,20 +96,17 @@ ctrl.getProvider = function (req, res, next) {
     }, function (err, results) {
         if (err) return errorResponse(err, res);
         const response = results.provider;
+
         response.best_sellers = results.bestSellers;
         response.sells_report = results.sellsReport;
 
-        const sells_info = results.totalSells.length ?
-            results.totalSells[0] :
-            {
-                sells_amount: 0,
-                sells_count: 0
-            };
-        response.total_sells_amount = sells_info.sells_amount;
-        response.total_sells_count = sells_info.sells_count;
-        response.total_materials_count = results.totalMaterialsCount.length ?
-            results.totalMaterialsCount[0].count : 0;
-        response.available_balance = 100;
+        response.report = {
+            available_balance: 100,
+            total_sells: results.totalSells.total_sells,
+            total_earnings: results.totalSells.total_earnings,
+            total_materials: results.totalMaterialsCount.length ?
+                results.totalMaterialsCount[0].count : 0,
+        }
 
         return success(res, response);
     });
@@ -162,11 +160,7 @@ ctrl.createMaterial = function (req, res, next) {
         material
             .populate('tags')
             .populate('provider', { display_name: 1 })
-            .execPopulate((err, doc) => {
-                if (err) return errorResponse(err);
-                return success(res, doc);
-            });
-        // return success(res, material);
+            .execPopulate(defaultHandler(res));
     });
 }
 
@@ -189,10 +183,15 @@ ctrl.deleteMaterial = function (req, res, next) {
 
 ctrl.getMaterial = genericCtrl.getMaterial;
 
+ctrl.getMaterialRatings = genericCtrl.getMaterialRatings;
+
 ctrl.searchMaterials = genericCtrl.searchMaterials;
 
 ctrl.getAllTags = genericCtrl.getAllTags;
 // ---------------------------------------------------------
-ctrl.addAdmin = function (req, res, next) { res.end('add admin'); }
+
+ctrl.getRequests = function (req, res, next) {
+    RequestSchema.getRequests(req.query, defaultHandler(res));
+}
 
 module.exports = ctrl;
