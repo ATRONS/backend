@@ -19,4 +19,10 @@ DownloadSchema.statics.createDownload = function (downloadInfo, callback) {
     this.model(COLLECTION).create(downloadInfo, callback);
 }
 
+DownloadSchema.statics.getMaterialDownloads = function (matId, callback) {
+    if (!mongoose.isValidObjectId(matId)) return callback({ custom: 'Invalid ObjectId', status: 400 });
+
+    this.model(COLLECTION).countDocuments({ material: matId }).exec(callback);
+}
+
 module.exports = mongoose.model(COLLECTION, DownloadSchema);
