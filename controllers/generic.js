@@ -4,6 +4,7 @@ const MaterialSchema = require('../models/material');
 const ReaderSchema = require('../models/users/reader');
 const TagSchema = require('../models/tag');
 const TransactionSchema = require('../models/transaction');
+const DownloadSchema = require('../models/download');
 
 const mongoose = require('mongoose');
 const jwtCtrl = require('../auth/jwt');
@@ -191,8 +192,10 @@ ctrl.downloadFile = function (bucketName) {
         if (!mongoose.isValidObjectId(id)) {
             return failure(res, 'Not found', 404);
         }
+
         id = mongoose.Types.ObjectId(id);
         const files = bucket.find({ _id: id });
+
         files.toArray((err, results) => {
             if (err) return failure(res, err);
             if (!results.length) return failure(res, 'Not found', 404);
@@ -210,7 +213,21 @@ ctrl.downloadFile = function (bucketName) {
                     logger.error(err);
                     return failure(res, 'Internal Error', 500);
                 }).on('finish', () => {
-                    console.log('donwload finished herer');
+                    MaterialSchema.getMaterialByFileId(id, (err, material) => {
+                        if (material) {
+                            const downloadInfo = {
+                                user: req.user._id,
+                                material: material._id,
+                                provider: material.provider,
+                            }
+                            DownloadSchema.createDownload(downloadInfo, (err, result) => {
+                                if (err) {
+                                    logger.error(err);
+                                    logger.error('could not record download for material ' + material._id);
+                                }
+                            })
+                        }
+                    });
                 });
             } else {
                 fileStream.pipe(res).on('error', function (error) {
