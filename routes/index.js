@@ -154,6 +154,12 @@ router.get(
     providerCtrl.getEarningsByMaterials);
 
 router.get(
+    providerBase + '/transactions',
+    authMiddleware.authenticateUser,
+    authMiddleware.isProvider,
+    providerCtrl.getTransactions);
+
+router.get(
     providerBase + '/earningsPerDayPerMaterial',
     authMiddleware.authenticateUser,
     authMiddleware.isProvider,
