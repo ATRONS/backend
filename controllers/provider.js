@@ -66,6 +66,10 @@ ctrl.getEarningsByMaterialsBnDays = function (req, res, next) {
     TransactionSchema.earningsByProviderBnDays(req.user._id, req.query, defaultHandler(res));
 }
 
+ctrl.getTransactions = function (req, res, next) {
+    TransactionSchema.getProviderTransactions(req.user._id, req.query, defaultHandler(res));
+}
+
 ctrl.uploadFile = genericCtrl.uploadFile;
 
 module.exports = ctrl;
