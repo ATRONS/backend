@@ -1,7 +1,10 @@
 const ReaderSchema = require('../models/users/reader');
+const ProviderSchema = require('../models/users/provider');
 const MaterialSchema = require('../models/material');
 const TagSchema = require('../models/tag');
+const RatingSchema = require('../models/rating');
 const InvoiceSchema = require('../models/invoice');
+const TransactionSchema = require('../models/transaction');
 const uuid = require('uuid');
 const _ = require('lodash');
 
@@ -185,6 +188,34 @@ ctrl.purchaseMaterial = function (req, res, next) {
     });
 }
 
+ctrl.rateMaterial = function (req, res, next) {
+    asyncLib.waterfall([
+        function (callback) {
+            TransactionSchema.readerOwnsMaterial(req.user._id, req.params.id, callback);
+        },
+        function (readerOwnsMaterial, callback) {
+            if (!readerOwnsMaterial) {
+                return callback({ custom: 'You do not own this material', status: 400 });
+            }
+            RatingSchema.updateRating(req.params.id, req.user._id, req.body, callback);
+        },
+        function (ratinginfo, callback) {
+            MaterialSchema.updateRating(req.params.id, ratinginfo, callback);
+        }
+    ], defaultHandler(res));
+}
+
+ctrl.getMaterialRatings = function (req, res, next) {
+    asyncLib.parallel({
+        previousComment: function (callback) {
+            RatingSchema.getReadersCommentOnMaterial(req.user._id, req.params.id, callback);
+        },
+        pagedRatings: function (callback) {
+            RatingSchema.getRatingsByMaterial(req.params.id, req.query, callback);
+        }
+    }, defaultHandler(res));
+}
+
 ctrl.searchProviders = genericCtrl.searchProviders;
 
 ctrl.getProvider = genericCtrl.getProvider;
@@ -198,6 +229,12 @@ ctrl.initialData = function (req, res, next) {
         },
         popular: function (callback) {
             MaterialSchema.search(req.query, callback);
+        },
+        newspapers: function (callback) {
+            ProviderSchema.search({ provides: 'NEWSPAPER' }, callback);
+        },
+        magazines: function (callback) {
+            ProviderSchema.search({ provides: 'MAGAZINE' }, callback);
         }
     }, function (err, results) {
         if (err) return errorResponse(err, res);
@@ -210,7 +247,12 @@ ctrl.initialData = function (req, res, next) {
             popular[genere._id.toHexString()] = results.popular;
         });
 
-        const response = { generes, popular };
+        const response = {
+            generes,
+            popular,
+            newspapers: results.newspapers,
+            magazines: results.magazines,
+        };
         return success(res, response);
     });
 }
