@@ -5,6 +5,7 @@ const ReaderSchema = require('../models/users/reader');
 const TagSchema = require('../models/tag');
 const TransactionSchema = require('../models/transaction');
 const DownloadSchema = require('../models/download');
+const RatingSchema = require('../models/rating');
 
 const mongoose = require('mongoose');
 const jwtCtrl = require('../auth/jwt');
@@ -263,7 +264,7 @@ ctrl.getMaterial = function (req, res, next) {
             TransactionSchema.earningByMaterial(req.params.id, callback);
         },
         downloads: function (callback) {
-            return callback(null, 15);
+            DownloadSchema.getMaterialDownloads(req.params.id, callback);
         }
     }, function (err, results) {
         if (err) return errorResponse(err, res);
@@ -284,6 +285,11 @@ ctrl.getMaterial = function (req, res, next) {
 ctrl.searchMaterials = function (req, res, next) {
     MaterialSchema.search(req.query, defaultHandler(res));
 }
+
+ctrl.getMaterialRatings = function (req, res, next) {
+    RatingSchema.getRatingsByMaterial(req.params.id, req.query, defaultHandler(res));
+}
+
 // ---------------------------------------------------------------------------------
 ctrl.getAllTags = function (req, res, next) {
     TagSchema.getAllTags(function (err, tags) {
