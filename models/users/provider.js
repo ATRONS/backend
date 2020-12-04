@@ -33,6 +33,7 @@ const ProviderSchema = mongoose.Schema({
     is_company: { type: Boolean, required: true, },
     auth: { type: AuthSchema, required: true },
 
+    // provider populated fields
     avatar_url: { type: String, required: function () { return this.auth.verified; } },
     company_info: {
         type: CompanySchema,
@@ -56,6 +57,7 @@ const ProviderSchema = mongoose.Schema({
     },
 
     // defaults
+    balance: { type: Number, default: 0, min: 0 },
     active: { type: Boolean, default: false },
     preferences: {
         language: { type: String, enum: ['ENGLISH', 'AMHARIC'], default: 'ENGLISH' },
@@ -101,14 +103,35 @@ ProviderSchema.methods.addSessionId = function (sessionId) {
     this.auth.tokens.push(sessionId);
 }
 
-ProviderSchema.methods.completeProviderCreation = function (oId, additionalInfo, callback) {
-    // add the updatable fields here.
+ProviderSchema.methods.activationUpdate = function (additionalInfo, callback) {
+    this.active = true;
+    this.auth.verified = true;
+    this.auth.password = additionalInfo.password;
+    this.avatar_url = additionalInfo.avatar_url;
+    this.company_info = additionalInfo.company_info;
+    this.author_info = additionalInfo.author_info;
+    this.provides = additionalInfo.provides;
+    this.preferences = additionalInfo.preferences;
+    this.about = additionalInfo.about;
+    this.save(callback);
+}
+
+ProviderSchema.methods.updateProfile = function (update, callback) {
+    this.display_name = update.display_name || this.display_name;
+    this.phone = update.phone || this.phone;
+    this.avatar_url = update.avatar_url || this.avatar_url;
+    this.author_info = update.author_info || this.author_info;
+    this.company_info = update.company_info || this.company_info;
+    this.about = update.about || this.about;
+    this.preferences = update.preferences || this.preferences;
+    this.save(callback);
 }
 
 // --------------------------------------------------------------------------
 ProviderSchema.statics.createProvider = function (providerInfo, callback) {
     providerInfo.password = undefined;
     providerInfo.active = false;
+    providerInfo.balance = 0;
 
     this.model(COLLECTION).create(providerInfo, callback);
 }
@@ -126,6 +149,7 @@ ProviderSchema.statics.getProvider = function (oId, callback) {
 ProviderSchema.statics.search = function (filters, callback) {
     const page = isNaN(Number(filters.page)) ? 0 : Math.abs(Number(filters.page));
     const query = {};
+
     if (filters.legal_name) {
         query.legal_name = RegExp(`^${filters.legal_name}`, 'i');
     }
@@ -142,7 +166,6 @@ ProviderSchema.statics.search = function (filters, callback) {
     }
 
     query['auth.deleted'] = false;
-    query.active = true;
 
     const that = this;
     asyncLib.parallel({
@@ -162,28 +185,6 @@ ProviderSchema.statics.search = function (filters, callback) {
                 .exec(asyncCallback);
         }
     }, callback);
-}
-
-ProviderSchema.statics.updateProvider = function (oId, update, callback) {
-    if (!mongoose.isValidObjectId(oId)) return callback({ custom: 'Invalid id', status: 400 });
-
-    this.model(COLLECTION).
-        findOne({ _id: oId }).
-        select('-auth -__v').
-        exec(function (err, provider) {
-            if (err) return callback(err);
-            if (!provider) return callback({ custom: 'Provider not found', status: 404 });
-
-            provider.display_name = update.display_name || provider.display_name;
-            provider.phone = update.phone || provider.phone;
-            provider.avatar_url = update.avatar_url || provider.avatar_url;
-            provider.author_info = update.author_info || provider.author_info;
-            provider.company_info = update.company_info || provider.company_info;
-            provider.about = update.about || provider.about;
-            provider.preferences = update.preferences || provider.preferences;
-
-            provider.save(callback);
-        });
 }
 
 ProviderSchema.statics.softDelete = function (id, callback) {
