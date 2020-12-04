@@ -66,13 +66,6 @@ router.put(
     authMiddleware.isReader,
     readerCtrl.updateProfile);
 
-router.post(
-    readerBase + '/upload/image',
-    authMiddleware.authenticateUser,
-    authMiddleware.isReader,
-    imgUpload.single('image'),
-    readerCtrl.uploadFile);
-
 router.get(
     readerBase + '/materials',
     authMiddleware.authenticateUser,
@@ -139,13 +132,6 @@ router.put(
     authMiddleware.authenticateUser,
     authMiddleware.isProvider,
     providerCtrl.updateProfile);
-
-router.post(
-    providerBase + '/upload/image',
-    authMiddleware.authenticateUser,
-    authMiddleware.isProvider,
-    imgUpload.single('image'),
-    providerCtrl.uploadFile);
 
 router.get(
     providerBase + '/requests',
@@ -307,13 +293,6 @@ router.post(
     materialUpload.single('material'),
     adminCtrl.uploadFile);
 
-router.post(
-    adminBase + '/upload/image',
-    authMiddleware.authenticateUser,
-    authMiddleware.isAdmin,
-    imgUpload.single('image'),
-    adminCtrl.uploadFile);
-
 // ---------------------------- admin / provider login -----------------------------------
 const accountBase = '/account';
 
@@ -328,6 +307,12 @@ router.post(
 
 // -------------------------------- media upload download section -------------------------
 const mediaBase = '/media';
+
+router.post(
+    mediaBase + '/upload/image',
+    authMiddleware.authenticateUser,
+    imgUpload.single('image'),
+    genericCtrl.uploadFile);
 
 router.get(
     mediaBase + '/materials/:id',
