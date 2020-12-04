@@ -58,7 +58,7 @@ RatingSchema.statics.getReadersCommentOnMaterial = function (readerId, matId, ca
 
     this.model(COLLECTION)
         .findOne({ reader: readerId, material: matId })
-        .select('__v')
+        .select('-__v')
         .lean()
         .exec(callback);
 
@@ -67,7 +67,14 @@ RatingSchema.statics.getReadersCommentOnMaterial = function (readerId, matId, ca
 RatingSchema.statics.getRatingsByMaterial = function (matId, filters, callback) {
     if (!mongoose.isValidObjectId(matId)) return callback({ custom: 'Invalid ObjectId', status: 400 });
 
-    const page = isNaN(Number(filters.page)) ? 0 : Math.abs(Number(filters.page));
+    const startRow = isNaN(Number(filters.startRow)) ?
+        0 : Math.abs(Number(filters.startRow));
+
+    let size = isNaN(Number(filters.size)) ?
+        LIMIT : Math.abs(Number(filters.size));
+
+    if (size > LIMIT) size = LIMIT;
+
     const query = {
         material: matId,
     };
@@ -80,8 +87,8 @@ RatingSchema.statics.getRatingsByMaterial = function (matId, filters, callback) 
                 .select('-__v')
                 .sort({ created_at: -1 })
                 .populate('reader', { firstname: 1, lastname: 1 })
-                .skip(page * LIMIT)
-                .limit(LIMIT)
+                .skip(startRow)
+                .limit(size)
                 .lean()
                 .exec(asyncCallback);
         },
