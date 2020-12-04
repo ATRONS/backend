@@ -148,15 +148,20 @@ MaterialSchema.statics.updateRating = function (matId, ratingInfo, callback) {
             if (isNew) {
                 let voteSum = (ratingObj.value * ratingObj.voters) + newRating;
                 ratingObj.voters += 1;
-                ratingObj.value = voteSum / ratingObj.voters;
-                ratingObj.groups[newRating - 1] += 1
+
+                if (ratingObj.voters > 0) {
+                    ratingObj.value = voteSum / ratingObj.voters;
+                    ratingObj.groups[newRating - 1] += 1;
+                }
+
             } else {
                 let voteSum = (ratingObj.value * ratingObj.voters) - oldRating + newRating;
-                ratingObj.value = voteSum / material.rating.voters;
-                ratingObj.groups[oldRating - 1] -= 1;
-                ratingObj.groups[newRating - 1] += 1;
+                if (ratingObj.voters > 0) {
+                    ratingObj.value = voteSum / ratingObj.voters;
+                    ratingObj.groups[oldRating - 1] -= 1;
+                    ratingObj.groups[newRating - 1] += 1;
+                }
             }
-
             material.rating = ratingObj;
             material.save((err, savedMat) => {
                 if (err) return callback(err);
