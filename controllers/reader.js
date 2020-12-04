@@ -130,7 +130,28 @@ ctrl.getFeaturedMaterials = function (req, res, next) { res.end('reader get feat
 ctrl.searchMaterials = genericCtrl.searchMaterials;
 
 ctrl.getMaterial = function (req, res, next) {
-    MaterialSchema.getMaterial(req.params.id, defaultHandler(res));
+    asyncLib.parallel({
+        material: function (callback) {
+            MaterialSchema.getMaterial(req.params.id, callback);
+        },
+        ratings: function (callback) {
+            RatingSchema.getRatingsByMaterial(req.params.id, req.query, callback);
+        },
+    }, function (err, results) {
+        if (err) return errorResponse(err, res);
+
+        const query = { provider: results.material.provider._id };
+        MaterialSchema.search(query, (err, moreFromProvider) => {
+            if (err) return errorResponse(err, res);
+
+            const response = results.material;
+            response.more_from_provider = moreFromProvider;
+            response.more_from_provider.materials = moreFromProvider.materials
+                .filter((each) => each._id.toHexString() !== req.params.id);;
+            response.material_ratings = results.ratings;
+            success(res, response);
+        });
+    });
 }
 
 ctrl.purchaseMaterial = function (req, res, next) {
@@ -163,7 +184,7 @@ ctrl.purchaseMaterial = function (req, res, next) {
                 return failure(res, 'Could not create Invoice', 500);
             }
 
-            const newInvoice = InvoiceSchema({
+            InvoiceSchema.createInvoice({
                 reader: req.user._id,
                 provider: material.provider._id,
                 material: material._id,
@@ -181,7 +202,7 @@ ctrl.purchaseMaterial = function (req, res, next) {
                 status: invoice.status,
 
                 invoice_dump: invoice,
-            });
+            }, defaultHandler(res));
 
             newInvoice.save(defaultHandler(res));
         });
@@ -228,7 +249,7 @@ ctrl.initialData = function (req, res, next) {
             TagSchema.getAllTags(callback);
         },
         popular: function (callback) {
-            MaterialSchema.search(req.query, callback);
+            MaterialSchema.search({ type: 'BOOK' }, callback);
         },
         newspapers: function (callback) {
             ProviderSchema.search({ provides: 'NEWSPAPER' }, callback);
