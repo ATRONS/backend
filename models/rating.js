@@ -69,7 +69,9 @@ RatingSchema.statics.getRatingsByMaterial = function (matId, filters, callback) 
     if (!mongoose.isValidObjectId(matId)) return failure({ custom: 'Invalid ObjectId', status: 400 });
 
     const page = isNaN(Number(filters.page)) ? 0 : Math.abs(Number(filters.page));
-    const query = {};
+    const query = {
+        material: matId,
+    };
 
     const that = this;
     asyncLib.parallel({
