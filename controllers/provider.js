@@ -1,14 +1,28 @@
 const MaterialSchema = require('../models/material');
 const TransactionSchema = require('../models/transaction');
 const RequestSchema = require('../models/request');
-const genericCtrl = require('./generic');
+const ProviderSchema = require('../models/users/provider');
 const asyncLib = require('async');
-const { errorResponse, success, defaultHandler } = require('../helpers/response');
+
+const genericCtrl = require('./generic');
+const {
+    errorResponse,
+    success,
+    defaultHandler,
+} = require('../helpers/response');
 
 const ctrl = {};
 
 ctrl.login = genericCtrl.adminProviderLogin;
 ctrl.logout = genericCtrl.logout;
+
+ctrl.completeRegistration = function (req, res, next) {
+    ProviderSchema.completeProviderCreation(req.body, (err, provider) => {
+        if (err) return errorResponse(err, res);
+        provider.auth = undefined;
+        return success(res, provider);
+    });
+}
 
 ctrl.forgotPassword = function (req, res, next) { res.end('provider forgot password') }
 
