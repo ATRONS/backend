@@ -16,8 +16,16 @@ const ctrl = {};
 ctrl.login = genericCtrl.adminProviderLogin;
 ctrl.logout = genericCtrl.logout;
 
-ctrl.completeRegistration = function (req, res, next) {
-    ProviderSchema.completeProviderCreation(req.body, (err, provider) => {
+ctrl.updateProfile = function (req, res, next) {
+    req.user.updateProfile(req.body, (err, provider) => {
+        if (err) return errorResponse(err, res);
+        provider.auth = undefined;
+        return success(res, provider);
+    });
+}
+
+ctrl.activateAccount = function (req, res, next) {
+    req.user.activationUpdate(req.body, (err, provider) => {
         if (err) return errorResponse(err, res);
         provider.auth = undefined;
         return success(res, provider);
@@ -25,8 +33,6 @@ ctrl.completeRegistration = function (req, res, next) {
 }
 
 ctrl.forgotPassword = function (req, res, next) { res.end('provider forgot password') }
-
-ctrl.updateProfile = function (req, res, next) { res.end('provider update profile') }
 
 // ----------------------- others -----------------------------------------
 ctrl.initialData = function (req, res, next) {
@@ -36,7 +42,7 @@ ctrl.initialData = function (req, res, next) {
         user_info: req.user,
     };
 
-    success(res, response);
+    return success(res, response);
 }
 
 ctrl.createRequest = function (req, res, next) {
