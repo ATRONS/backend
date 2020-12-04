@@ -5,31 +5,36 @@ const luxon = require('luxon');
 const COLLECTION = 'transactions';
 const LIMIT = 10;
 
-const types = { WITHDRAWAL: 'WITHDRAWAL', PURCHASE: 'PURCHASE', SERVICEFEE: 'SERVICE_FEE' };
+const invoice_types = require('./constants/invoice_types');
 
 const TransactionSchema = mongoose.Schema({
     kind: {
         type: String,
         required: true,
-        enum: Object.keys(types),
+        enum: Object.keys(invoice_types),
     },
     description: { type: String, required: true },
     amount: { type: Number, required: true, min: 0 },
 
-    provider: { type: mongoose.Types.ObjectId, required: true, ref: 'providers', index: true },
+    provider: {
+        type: mongoose.Types.ObjectId,
+        ref: 'providers',
+        index: true,
+        required: function () { return this.kind !== invoice_types.SERVICE_FEE; }
+    },
 
-    // optional fields
     reader: {
         type: mongoose.Types.ObjectId,
         ref: 'readers',
         sparse: true,
-        required: function () { return this.kind === types.PURCHASE; }
+        required: function () { return this.kind === invoice_types.PURCHASE; }
     },
+
     material: {
         type: mongoose.Types.ObjectId,
         ref: 'materials',
         sparse: true,
-        required: function () { return this.kind === types.SERVICEFEE; }
+        required: function () { return this.kind === invoice_types.PURCHASE; }
     },
 
     tracenumber: { type: String, required: true, index: true },
@@ -44,9 +49,13 @@ const TransactionSchema = mongoose.Schema({
 
 TransactionSchema.index({ created_at: 1 });
 
+TransactionSchema.statics.createTransaction = function (transactionInfo, callback) {
+    this.model(COLLECTION).create(transactionInfo, callback);
+}
+
 TransactionSchema.statics.readerOwnsMaterial = function (readerId, matId, callback) {
     this.model(COLLECTION)
-        .findOne({ reader: readerId, material: matId, type: types.PURCHASE })
+        .findOne({ reader: readerId, material: matId, type: invoice_types.PURCHASE })
         .select('_id')
         .exec((err, transaction) => {
             if (err) return callback(err);
