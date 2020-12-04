@@ -6,24 +6,42 @@ const _ = require('lodash');
 const COLLECTION = 'requests';
 const LIMIT = 10;
 
-const types = { WITHDRAWAL: 'WITHDRAWAL', DELETE_MATERIAL: 'DELETE_MATERIAL' };
+const request_status_obj = {
+    ALL: 'all', PENDING: 'pending',
+    DENIED: 'denied', COMPLETED: 'completed',
+};
+
+const categories_obj = {
+    PAYMENT: 'payment',
+    MATERIAL_REMOVAL: 'material_removal',
+    DELETE_ACCOUNT: 'delete_account',
+}
+
+const request_status = Object.values(request_status_obj);
+const categories = Object.values(categories_obj);
 
 const RequestSchema = mongoose.Schema({
     provider: { type: mongoose.Types.ObjectId, required: true, ref: 'providers', index: true },
-    kind: { type: String, required: true, enum: Object.keys(types) },
+    status: {
+        type: String, required: true,
+        default: request_status_obj.PENDING,
+        enum: request_status, index: true
+    },
+    category: { type: String, required: true, enum: categories, index: true },
     description: { type: String, default: "" },
+
     amount: {
         type: Number,
         min: 0,
-        required: function () { return this.kind === types.WITHDRAWAL; }
+        required: function () { return this.category === categories_obj.PAYMENT; }
     },
+
     material: {
         type: mongoose.Types.ObjectId,
         ref: 'materials',
         sparse: true,
-        required: function () { return this.kind === types.DELETE_MATERIAL; },
+        required: function () { return this.kind === types.MATERIAL_REMOVAL; },
     },
-    closed: { type: Boolean, default: false },
 }, {
     timestamps: {
         createdAt: 'created_at',
@@ -35,9 +53,11 @@ const RequestSchema = mongoose.Schema({
 RequestSchema.index({ created_at: 1 });
 
 RequestSchema.pre('save', function (next) {
-    if (this.kind === types.WITHDRAWAL) {
-        this.material = undefined;
-    } else if (this.kind === types.DELETE_MATERIAL) {
+    if (this.category !== categories_obj.PAYMENT) {
+        this.amount = undefined;
+    }
+
+    if (this.category !== categories_obj.MATERIAL_REMOVAL) {
         this.amount = undefined;
     }
 
@@ -45,7 +65,7 @@ RequestSchema.pre('save', function (next) {
 });
 
 RequestSchema.statics.createRequest = function (requestData, callback) {
-    requestData.closed = false;
+    requestData.status = undefined;
     this.model(COLLECTION).create(requestData, callback);
 }
 
@@ -62,18 +82,20 @@ RequestSchema.statics.getRequests = function (filters, callback) {
         query.material = filters.material;
     }
 
-    if (_.isString(filters.kind)) {
-        const kind = _.toUpper(filters.kind.trim());
-        if (types[kind]) {
-            query.kind = kind;
+    if (_.isString(filters.category)) {
+        const category = _.toUpper(filters.category.trim());
+        if (categories_obj[category]) {
+            query.category = kind;
         }
     }
 
-    query.closed = false;
-    if (_.isBoolean(filters.closed)) {
-        query.closed = filters.closed;
+    if (_.isString(filters.status)) {
+        const status = _.toUpper(filters.status.trim());
+        if (request_status_obj[status]) {
+            query.status = status;
+        }
     }
-    console.log(query);
+
     const that = this;
     asyncLib.parallel({
         requests: function (asyncCallback) {
