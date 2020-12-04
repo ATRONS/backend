@@ -48,8 +48,19 @@ middleware.isAdmin = function (req, res, next) {
     return failure(res, 'unauthorized', 403);
 }
 
-middleware.isProvider = function (req, res, next) {
-    if (req.user && req.user.role === 'provider') return next();
+middleware.isVerifiedProvider = function (req, res, next) {
+    if (req.user &&
+        req.user.role === 'provider' &&
+        req.user.active &&
+        req.user.auth.verified) return next();
+    return failure(res, 'unauthorized', 403);
+}
+
+middleware.isUnverifiedProvider = function (req, res, next) {
+    if (req.user &&
+        req.user.role === 'provider' &&
+        !req.user.active &&
+        !req.user.auth.verified) return next();
     return failure(res, 'unauthorized', 403);
 }
 
