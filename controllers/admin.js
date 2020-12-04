@@ -4,6 +4,7 @@ const MaterialSchema = require('../models/material');
 const TransactionSchema = require('../models/transaction');
 const RequestSchema = require('../models/request');
 const genericCtrl = require('./generic');
+const jwtCtrl = require('../auth/jwt');
 const asyncLib = require('async');
 const _ = require('lodash');
 const ObjectId = require("mongoose").Types.ObjectId;
@@ -29,28 +30,16 @@ ctrl.initialData = function (req, res, next) {
 }
 
 ctrl.createProvider = function (req, res, next) {
-    const provider = new ProviderSchema({
-        legal_name: req.body.legal_name,
-        display_name: req.body.display_name,
-        email: req.body.email,
-        phone: req.body.phone,
-        about: req.body.about,
-        provides: req.body.provides,
-        avatar_url: req.body.avatar_url,
-        auth: {
-            password: req.body.password,
-        },
-        is_company: !!req.body.company_info,
-        company_info: req.body.company_info,
-        author_info: req.body.author_info,
-    });
+    req.body.auth = {
+        // password : jwtCtrl.getRandomBytes(10),
+        password: 'password',
+    }
 
-    provider.save((err, result) => {
+    ProviderSchema.createProvider(req.body, (err, result) => {
         if (err) return errorResponse(err, res);
         result.auth = undefined;
         return success(res, result);
     });
-
 }
 
 ctrl.updateProviderInfo = function (req, res, next) {
