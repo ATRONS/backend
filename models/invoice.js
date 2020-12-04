@@ -4,6 +4,8 @@ const luxon = require('luxon');
 const COLLECTION = 'invoices';
 const LIMIT = 10;
 
+const invoiceTypes = ['INCOMMING', 'OUTGOING'];
+
 const InvoiceSchema = mongoose.Schema({
     reader: { type: mongoose.Types.ObjectId, required: true, index: true },
     provider: { type: mongoose.Types.ObjectId, required: true, index: true },
@@ -32,6 +34,10 @@ const InvoiceSchema = mongoose.Schema({
         currentTime: () => luxon.DateTime.utc().valueOf()
     }
 });
+
+InvoiceSchema.statics.createInvoice = function (invoiceInfo, callback) {
+    this.model(COLLECTION).create(invoiceInfo, callback);
+}
 
 InvoiceSchema.statics.findByTraceNumber = function (tracenumber, callback) {
     if (!_.isString(tracenumber)) return callback({ custom: 'Invalid tracenumber', status: 400 });
