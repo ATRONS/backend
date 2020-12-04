@@ -2,14 +2,25 @@ const mongoose = require('mongoose');
 const luxon = require('luxon');
 
 const COLLECTION = 'invoices';
-const LIMIT = 10;
 
-const invoiceTypes = ['INCOMMING', 'OUTGOING'];
+const invoice_types = require('./constants/invoice_types');
 
 const InvoiceSchema = mongoose.Schema({
-    reader: { type: mongoose.Types.ObjectId, required: true, index: true },
+    kind: { type: String, required: true, enum: Object.keys(invoice_types) },
+
+    reader: {
+        type: mongoose.Types.ObjectId,
+        sparse: true,
+        required: function () { return this.kind === invoice_types.PURCHASE; }
+
+    },
+    material: {
+        type: mongoose.Types.ObjectId,
+        sparse: true,
+        required: function () { return this.kind === invoice_types.PURCHASE; }
+    },
+
     provider: { type: mongoose.Types.ObjectId, required: true, index: true },
-    material: { type: mongoose.Types.ObjectId, required: true, index: true },
 
     amount: { type: Number, required: true, min: 0 },
     payer: { type: String, required: true, index: true },
@@ -37,6 +48,20 @@ const InvoiceSchema = mongoose.Schema({
 
 InvoiceSchema.statics.createInvoice = function (invoiceInfo, callback) {
     this.model(COLLECTION).create(invoiceInfo, callback);
+}
+
+InvoiceSchema.statics.updateByTracenumber = function (tracenumber, updates, callback) {
+    if (!_.isString(tracenumber)) return callback({ custom: 'Invalid tracenumber', status: 400 });
+
+    const updates = {
+        transaction_fee: invoiceInfo.fee,
+        transaction_id: invoiceInfo.id,
+        status: invoiceInfo.status,
+        transaction_dump: invoiceInfo,
+    };
+    this.model(COLLECTION)
+        .findOneAndUpdate({ tracenumber: tracenumber }, { $set: updates }, { new: true })
+        .exec(callback);
 }
 
 InvoiceSchema.statics.findByTraceNumber = function (tracenumber, callback) {
