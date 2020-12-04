@@ -166,7 +166,13 @@ MaterialSchema.statics.updateRating = function (matId, ratingInfo, callback) {
 }
 
 MaterialSchema.statics.search = function (filters, callback) {
-    const page = isNaN(Number(filters.page)) ? 0 : Math.abs(Number(filters.page));
+    const startRow = isNaN(Number(filters.startRow)) ?
+        0 : Math.abs(Number(filters.startRow));
+
+    let size = isNaN(Number(filters.size)) ?
+        LIMIT : Math.abs(Number(filters.size));
+
+    if (size > LIMIT) size = LIMIT;
 
     const query = {};
 
@@ -189,8 +195,8 @@ MaterialSchema.statics.search = function (filters, callback) {
                 .select('type title subtitle cover_img_url ISBN rating price edition')
                 .sort({ created_at: -1 })
                 .populate('provider', { legal_name: 1, display_name: 1 })
-                .skip(page * LIMIT)
-                .limit(LIMIT)
+                .skip(startRow)
+                .limit(size)
                 .lean()
                 .exec(asyncCallback);
         },
@@ -203,7 +209,13 @@ MaterialSchema.statics.search = function (filters, callback) {
 }
 
 MaterialSchema.statics.minifiedSearch = function (filters, callback) {
-    const page = isNaN(Number(filters.page)) ? 0 : Math.abs(Number(filters.page));
+    const startRow = isNaN(Number(filters.startRow)) ?
+        0 : Math.abs(Number(filters.startRow));
+
+    let size = isNaN(Number(filters.size)) ?
+        LIMIT : Math.abs(Number(filters.size));
+
+    if (size > LIMIT) size = LIMIT;
 
     const query = {};
 
@@ -224,8 +236,8 @@ MaterialSchema.statics.minifiedSearch = function (filters, callback) {
             that.model(COLLECTION)
                 .find(query)
                 .select('type title subtitle cover_img_url ISBN')
-                .skip(page * LIMIT)
-                .limit(LIMIT)
+                .skip(startRow)
+                .limit(size)
                 .lean()
                 .exec(asyncCallback);
         },
