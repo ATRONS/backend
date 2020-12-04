@@ -23,28 +23,26 @@ RatingSchema.index({ created_at: 1 });
 RatingSchema.index({ user: 1, material: 1 });
 
 RatingSchema.statics.updateRating = function (matId, userId, ratingInfo, callback) {
-    if (!_.isFinite(Number(ratingInfo.value)))
+    if (!_.isFinite(Number(ratingInfo.value))) {
         return callback({ custom: 'Invalid rating', status: 400 });
+    }
 
-    let value = Math.floor(Number(ratingInfo.value));
-    const description = ratingInfo.description || "";
+    let value = Math.floor(Math.abs(Number(ratingInfo.value)));
+    const updates = { value: value };
+    if (_.isString(ratingInfo.description)) {
+        updates.description = ratingInfo.description.trim();
+    }
 
     this.model(COLLECTION)
         .findOneAndUpdate(
             { reader: userId, material: matId },
-            {
-                $set: {
-                    description: description,
-                    value: value,
-                }
-            },
+            { $set: updates },
             {
                 upsert: true,
                 runValidators: true
             })
         .exec((err, result) => {
             if (err) return callback(err);
-
             if (!result) return callback(null, { isNew: true, newRating: value });
             return callback(null, { isNew: false, oldRating: result.value, newRating: value });
         });
