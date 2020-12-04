@@ -15,13 +15,13 @@ const RequestSchema = mongoose.Schema({
     amount: {
         type: Number,
         min: 0,
-        required: () => this.kind === types.WITHDRAWAL
+        required: function () { return this.kind === types.WITHDRAWAL; }
     },
     material: {
         type: mongoose.Types.ObjectId,
         ref: 'materials',
         sparse: true,
-        required: () => this.kind === types.DELETE_MATERIAL,
+        required: function () { return this.kind === types.DELETE_MATERIAL; },
     },
     closed: { type: Boolean, default: false },
 }, {
@@ -34,12 +34,19 @@ const RequestSchema = mongoose.Schema({
 
 RequestSchema.index({ created_at: 1 });
 
+RequestSchema.pre('save', function (next) {
+    if (this.kind === types.WITHDRAWAL) {
+        this.material = undefined;
+    } else if (this.kind === types.DELETE_MATERIAL) {
+        this.amount = undefined;
+    }
+
+    return next();
+});
+
 RequestSchema.statics.createRequest = function (requestData, callback) {
     requestData.closed = false;
-    this.model(COLLECTION).create(requestData, (err, result) => {
-        console.log(err);
-        return callback(err, result);
-    });
+    this.model(COLLECTION).create(requestData, callback);
 }
 
 RequestSchema.statics.getRequests = function (filters, callback) {
@@ -47,11 +54,11 @@ RequestSchema.statics.getRequests = function (filters, callback) {
 
     const query = {};
 
-    if (mongoose.isValidObjectId(filters.provider)) {
+    if (filters.provider && mongoose.isValidObjectId(filters.provider)) {
         query.provider = filters.provider;
     }
 
-    if (mongoose.isValidObjectId(filters.material)) {
+    if (filters.material && mongoose.isValidObjectId(filters.material)) {
         query.material = filters.material;
     }
 
@@ -66,7 +73,7 @@ RequestSchema.statics.getRequests = function (filters, callback) {
     if (_.isBoolean(filters.closed)) {
         query.closed = filters.closed;
     }
-
+    console.log(query);
     const that = this;
     asyncLib.parallel({
         requests: function (asyncCallback) {
