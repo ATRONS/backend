@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const luxon = require('luxon');
 const asyncLib = require('async');
 const _ = require('lodash');
-const { failure } = require('../helpers/response');
 
 const COLLECTION = 'ratings';
 const LIMIT = 10;
@@ -66,7 +65,7 @@ RatingSchema.statics.getReadersCommentOnMaterial = function (readerId, matId, ca
 }
 
 RatingSchema.statics.getRatingsByMaterial = function (matId, filters, callback) {
-    if (!mongoose.isValidObjectId(matId)) return failure({ custom: 'Invalid ObjectId', status: 400 });
+    if (!mongoose.isValidObjectId(matId)) return callback({ custom: 'Invalid ObjectId', status: 400 });
 
     const page = isNaN(Number(filters.page)) ? 0 : Math.abs(Number(filters.page));
     const query = {
