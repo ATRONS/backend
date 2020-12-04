@@ -134,6 +134,9 @@ ctrl.getMaterial = function (req, res, next) {
         material: function (callback) {
             MaterialSchema.getMaterial(req.params.id, callback);
         },
+        readerRating: function (callback) {
+            RatingSchema.getReadersCommentOnMaterial(req.user._id, req.params.id, callback);
+        },
         ratings: function (callback) {
             RatingSchema.getRatingsByMaterial(req.params.id, req.query, callback);
         },
@@ -149,6 +152,7 @@ ctrl.getMaterial = function (req, res, next) {
             response.more_from_provider.materials = moreFromProvider.materials
                 .filter((each) => each._id.toHexString() !== req.params.id);;
             response.material_ratings = results.ratings;
+            response.readers_last_rating = results.readerRating;
             success(res, response);
         });
     });
