@@ -124,67 +124,73 @@ router.post(
 router.get(
     providerBase + '/initialData',
     authMiddleware.authenticateUser,
-    authMiddleware.isProvider,
+    authMiddleware.isVerifiedProvider,
     providerCtrl.initialData);
 
 router.put(
     providerBase + '/profile',
     authMiddleware.authenticateUser,
-    authMiddleware.isProvider,
+    authMiddleware.isVerifiedProvider,
     providerCtrl.updateProfile);
+
+router.put(
+    providerBase + '/profile/activate',
+    authMiddleware.authenticateUser,
+    authMiddleware.isUnverifiedProvider,
+    providerCtrl.activateAccount);
 
 router.get(
     providerBase + '/requests',
     authMiddleware.authenticateUser,
-    authMiddleware.isProvider,
+    authMiddleware.isVerifiedProvider,
     providerCtrl.getOwnRequests);
 
 router.post(
     providerBase + '/requests',
     authMiddleware.authenticateUser,
-    authMiddleware.isProvider,
+    authMiddleware.isVerifiedProvider,
     providerCtrl.createRequest);
 
 router.get(
     providerBase + '/materials',
     authMiddleware.authenticateUser,
-    authMiddleware.isProvider,
+    authMiddleware.isVerifiedProvider,
     providerCtrl.getOwnMaterials);
 
 router.get(
     providerBase + '/materials/:id',
     authMiddleware.authenticateUser,
-    authMiddleware.isProvider,
+    authMiddleware.isVerifiedProvider,
     providerCtrl.getMaterial);
 
 router.get(
     providerBase + '/materials/:id/ratings',
     authMiddleware.authenticateUser,
-    authMiddleware.isProvider,
+    authMiddleware.isVerifiedProvider,
     providerCtrl.getMaterialRatings);
 
 router.get(
     providerBase + '/materials/:id/report/sells',
     authMiddleware.authenticateUser,
-    authMiddleware.isProvider,
+    authMiddleware.isVerifiedProvider,
     providerCtrl.getMaterialSellsReport);
 
 router.get(
     providerBase + '/earnings',
     authMiddleware.authenticateUser,
-    authMiddleware.isProvider,
+    authMiddleware.isVerifiedProvider,
     providerCtrl.getEarningsByMaterials);
 
 router.get(
     providerBase + '/transactions',
     authMiddleware.authenticateUser,
-    authMiddleware.isProvider,
+    authMiddleware.isVerifiedProvider,
     providerCtrl.getTransactions);
 
 router.get(
     providerBase + '/earningsPerDayPerMaterial',
     authMiddleware.authenticateUser,
-    authMiddleware.isProvider,
+    authMiddleware.isVerifiedProvider,
     providerCtrl.getEarningsByMaterialsBnDays);
 
 
