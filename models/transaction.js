@@ -23,13 +23,13 @@ const TransactionSchema = mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: 'readers',
         sparse: true,
-        required: () => this.kind === types.PURCHASE
+        required: function () { return this.kind === types.PURCHASE; }
     },
     material: {
         type: mongoose.Types.ObjectId,
         ref: 'materials',
         sparse: true,
-        required: () => this.kind === types.SERVICEFEE
+        required: function () { return this.kind === types.SERVICEFEE; }
     },
 
     tracenumber: { type: String, required: true, index: true },
@@ -349,10 +349,10 @@ TransactionSchema.statics.getProviderTransactions = function (provider, filters,
 
     const query = {
         provider: provider,
-        created_at: {
-            $gte: start,
-            $lte: end,
-        }
+        // created_at: {
+        //     $gte: start,
+        //     $lte: end,
+        // }
     }
 
     this.model(COLLECTION)
