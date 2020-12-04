@@ -53,14 +53,14 @@ InvoiceSchema.statics.createInvoice = function (invoiceInfo, callback) {
 InvoiceSchema.statics.updateByTracenumber = function (tracenumber, updates, callback) {
     if (!_.isString(tracenumber)) return callback({ custom: 'Invalid tracenumber', status: 400 });
 
-    const updates = {
+    const updateObj = {
         transaction_fee: invoiceInfo.fee,
         transaction_id: invoiceInfo.id,
         status: invoiceInfo.status,
         transaction_dump: invoiceInfo,
     };
     this.model(COLLECTION)
-        .findOneAndUpdate({ tracenumber: tracenumber }, { $set: updates }, { new: true })
+        .findOneAndUpdate({ tracenumber: tracenumber }, { $set: updateObj }, { new: true })
         .exec(callback);
 }
 
