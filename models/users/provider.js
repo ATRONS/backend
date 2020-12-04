@@ -25,37 +25,40 @@ const CompanySchema = mongoose.Schema({
 }, { _id: false });
 
 const ProviderSchema = mongoose.Schema({
+    // first creation phase fields
     legal_name: { type: String, required: true, trim: true, index: true },
     display_name: { type: String, required: true, trim: true, index: true },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
     phone: { type: String, required: true, trim: true },
-    avatar_url: { type: String, required: true },
-
     is_company: { type: Boolean, required: true, },
+    auth: { type: AuthSchema, required: true },
 
+    avatar_url: { type: String, required: function () { return this.auth.verified; } },
     company_info: {
         type: CompanySchema,
-        required: function () { return this.is_company; },
+        required: function () { return this.auth.verified && this.is_company; }
     },
-
     author_info: {
         type: AuthorSchema,
-        required: function () { return !this.is_company; }
+        required: function () { return this.auth.verified && !this.is_company; }
     },
-
     provides: {
         type: String,
         enum: ['BOOK', 'MAGAZINE', 'NEWSPAPER'],
-        required: true,
         index: true,
+        required: function () { return this.auth.verified }
     },
 
-    about: { type: String, default: '' },
+    about: {
+        type: String,
+        default: '',
+        required: function () { return this.auth.verified; }
+    },
 
-    auth: { type: AuthSchema, required: true },
-
+    // defaults
+    active: { type: Boolean, default: false },
     preferences: {
-        language: { type: String, enum: ['ENGLISH', 'AMHARIC'] },
+        language: { type: String, enum: ['ENGLISH', 'AMHARIC'], default: 'ENGLISH' },
     },
 }, {
     timestamps: {
@@ -98,7 +101,18 @@ ProviderSchema.methods.addSessionId = function (sessionId) {
     this.auth.tokens.push(sessionId);
 }
 
+ProviderSchema.methods.completeProviderCreation = function (oId, additionalInfo, callback) {
+    // add the updatable fields here.
+}
+
 // --------------------------------------------------------------------------
+ProviderSchema.statics.createProvider = function (providerInfo, callback) {
+    providerInfo.password = undefined;
+    providerInfo.active = false;
+
+    this.model(COLLECTION).create(providerInfo, callback);
+}
+
 ProviderSchema.statics.getProvider = function (oId, callback) {
     if (!mongoose.isValidObjectId(oId)) return callback({ custom: 'Invalid Id', status: 400 });
 
@@ -128,6 +142,7 @@ ProviderSchema.statics.search = function (filters, callback) {
     }
 
     query['auth.deleted'] = false;
+    query.active = true;
 
     const that = this;
     asyncLib.parallel({
