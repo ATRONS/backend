@@ -1,8 +1,10 @@
-const crypto = require('crypto');
-const axios = require('axios');
 const urls = require('../../helpers/constants/url');
 const InvoiceSchema = require('../../models/invoice');
 const TransactionSchema = require('../../models/transaction');
+
+const crypto = require('crypto');
+const axios = require('axios');
+const asyncLib = require('async');
 
 const ctrl = {};
 
@@ -53,19 +55,57 @@ ctrl.webHook = function (req, res, next) {
         return;
     }
 
+    const invoiceUpdates = {
+        transaction_fee: payload.fee,
+        transaction_id: payload.id,
+        status: payload.status,
+        transaction_dump: payload,
+    };
+
+    asyncLib.waterfall([
+        function (callback) {
+            InvoiceSchema.updateByTracenumber(tracenumber, invoiceUpdates, callback);
+        },
+        // function
+        function (updatedInvoice, callback) {
+            const transactionInfo = {
+                kind: updatedInvoice.kind,
+                reader: updatedInvoice.reader,
+                provider: updatedInvoice.provider,
+                material: updatedInvoice.material,
+                amount: updatedInvoice.amount,
+                tracenumber: updatedInvoice.tracenumber,
+                transaction_fee: updatedInvoice.transaction_fee,
+            }
+            TransactionSchema.createTransaction(transactionInfo, callback);
+        },
+        function (transaction, callback) {
+            return callback(null, transaction);
+        }
+    ], function (err, finalResult) {
+        if (err) {
+            logger.error(err);
+            logger.error('Transaction processing failed, tracenumber: ' + tracenumber);
+            return;
+        }
+
+        logger.info('Transaction processing successfull tracenumber: ' + tracenumber);
+    });
+
     InvoiceSchema.findByTraceNumber(tracenumber, (err, invoice) => {
         if (err) {
             logger.error('Invoice fetch failed for tracenumber ' + tracenumber);
             return;
         }
         if (!invoice) {
-            logger.info('Invoice does not exist, tracenumber ' + tracenumber);
+            logger.error('Invoice does not exist, tracenumber ' + tracenumber);
             return;
         }
 
         invoice.transaction_fee = payload.fee;
         invoice.transaction_id = payload.id;
         invoice.status = payload.status;
+        invoice.transaction_dump = payload;
         invoice.save((err, savedInvoice) => {
             if (err) {
                 logger.error('Invoice save failed, tracenumber ' + tracenumber);
@@ -74,13 +114,7 @@ ctrl.webHook = function (req, res, next) {
 
             logger.debug('invoice save successfull, tracenumber ' + tracenumber);
 
-            const transaction = TransactionSchema({
-                reader: savedInvoice.reader,
-                provider: savedInvoice.provider,
-                material: savedInvoice.material,
-                amount: savedInvoice.amount,
-                transaction_fee: savedInvoice.transaction_fee,
-            });
+            const transaction = TransactionSchema();
 
             transaction.save((err, savedTransaction) => {
                 if (err) {
