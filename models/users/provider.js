@@ -147,7 +147,14 @@ ProviderSchema.statics.getProvider = function (oId, callback) {
 }
 
 ProviderSchema.statics.search = function (filters, callback) {
-    const page = isNaN(Number(filters.page)) ? 0 : Math.abs(Number(filters.page));
+    const startRow = isNaN(Number(filters.startRow)) ?
+        0 : Math.abs(Number(filters.startRow));
+
+    let size = isNaN(Number(filters.size)) ?
+        LIMIT : Math.abs(Number(filters.size));
+
+    if (size > LIMIT) size = LIMIT;
+
     const query = {};
 
     if (filters.legal_name) {
@@ -174,8 +181,8 @@ ProviderSchema.statics.search = function (filters, callback) {
                 .find(query)
                 .select('display_name legal_name avatar_url about')
                 .sort({ created_at: 1 })
-                .skip(page * LIMIT)
-                .limit(LIMIT)
+                .skip(startRow)
+                .limit(size)
                 .lean()
                 .exec(asyncCallback);
         },
