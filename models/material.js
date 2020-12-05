@@ -197,7 +197,7 @@ MaterialSchema.statics.search = function (filters, callback) {
         materials: function (asyncCallback) {
             that.model(COLLECTION)
                 .find(query)
-                .select('type title subtitle cover_img_url ISBN rating price edition')
+                .select('type title subtitle cover_img_url ISBN rating price edition created_at')
                 .sort({ created_at: -1 })
                 .populate('provider', { legal_name: 1, display_name: 1 })
                 .skip(startRow)
@@ -240,7 +240,7 @@ MaterialSchema.statics.minifiedSearch = function (filters, callback) {
         materials: function (asyncCallback) {
             that.model(COLLECTION)
                 .find(query)
-                .select('type title subtitle cover_img_url ISBN')
+                .select('type title subtitle cover_img_url ISBN created_at')
                 .skip(startRow)
                 .limit(size)
                 .lean()
