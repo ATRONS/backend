@@ -5,5 +5,6 @@ module.exports = {
         BASEURL: HELLOCASH_BASEURL,
         AUTNENTICATE: HELLOCASH_BASEURL + '/authenticate',
         INVOICE: HELLOCASH_BASEURL + '/invoices',
+        TRANSFER: HELLOCASH_BASEURL + '/transfers',
     }
 };
