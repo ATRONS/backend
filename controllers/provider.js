@@ -3,12 +3,16 @@ const TransactionSchema = require('../models/transaction');
 const RequestSchema = require('../models/request');
 const ProviderSchema = require('../models/users/provider');
 const asyncLib = require('async');
+const _ = require('lodash');
+
+const settings = require('../defaults/settings');
 
 const genericCtrl = require('./generic');
 const {
     errorResponse,
     success,
     defaultHandler,
+    failure,
 } = require('../helpers/response');
 
 const ctrl = {};
@@ -46,8 +50,37 @@ ctrl.initialData = function (req, res, next) {
 }
 
 ctrl.createRequest = function (req, res, next) {
-    req.body.provider = req.user._id;
-    RequestSchema.createRequest(req.body, defaultHandler(res));
+    if (!_.isString(req.body.category)) return failure(res, 'category required');
+    const category = _.toUpper(req.body.category.trim());
+    if (!settings.REQUEST_CATEGORIES[category]) return failure(res, 'Unknown category');
+
+    const requestInfo = {
+        provider: req.user._id,
+        category: category,
+        amount: req.body.amount,
+        description: req.body.description,
+        status: settings.REQUEST_STATUS.PENDING,
+        material: req.body.material,
+    };
+
+    // special attention to withdrawal requests.
+    if (category === settings.REQUEST_CATEGORIES.WITHDRAWAL) {
+        let amount = req.body.amount;
+        if (isNaN(Number(amount))) return failure(res, 'Invalid amount');
+        if (!_.isFinite(Number(amount))) return failure(res, 'Invalid amount');
+
+        amount = Number(req.body.amount);
+        if (amount < 0) return failure(res, 'Withdraw amount cannot be negative');
+        if (amount < settings.MINIMUM_WITHDRAWABLE_AMOUNT) {
+            return failure(res, 'Amount less than minimum withdrawable amount');
+        }
+
+        const balance = req.user.balance;
+        if (amount > balance) return failure(res, 'Insufficient balance');
+        requestInfo.amount = amount;
+    }
+
+    RequestSchema.createRequest(requestInfo, defaultHandler(res));
 }
 
 ctrl.getOwnRequests = function (req, res, next) {
@@ -104,6 +137,16 @@ ctrl.getMaterialSellsReport = function (req, res, next) {
 
 ctrl.getTransactions = function (req, res, next) {
     TransactionSchema.getProviderTransactions(req.user._id, req.query, defaultHandler(res));
+}
+
+ctrl.getWithdrawalInfo = function (req, res, next) {
+    const response = {
+        net_balance: req.user.balance,
+        minimun_withdrawable_amount: settings.MINIMUM_WITHDRAWABLE_AMOUNT,
+        service_fee: req.user.balance * settings.HELLOCASH_SERVICE_FEE_PERCENT,
+    };
+
+    return success(res, response);
 }
 
 ctrl.uploadFile = genericCtrl.uploadFile;
