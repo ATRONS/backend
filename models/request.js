@@ -3,19 +3,13 @@ const asyncLib = require('async');
 const luxon = require('luxon');
 const _ = require('lodash');
 
+const settings = require('../defaults/settings');
+
 const COLLECTION = 'requests';
 const LIMIT = 10;
 
-const request_status_obj = {
-    ALL: 'all', PENDING: 'pending',
-    DENIED: 'denied', COMPLETED: 'completed',
-};
-
-const categories_obj = {
-    PAYMENT: 'payment',
-    MATERIAL_REMOVAL: 'material_removal',
-    DELETE_ACCOUNT: 'delete_account',
-}
+const request_status_obj = settings.REQUEST_STATUS;
+const categories_obj = settings.REQUEST_CATEGORIES;
 
 const request_status = Object.values(request_status_obj);
 const categories = Object.values(categories_obj);
@@ -40,7 +34,7 @@ const RequestSchema = mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: 'materials',
         sparse: true,
-        required: function () { return this.kind === types.MATERIAL_REMOVAL; },
+        required: function () { return this.category === categories_obj.MATERIAL_REMOVAL; },
     },
 }, {
     timestamps: {
@@ -70,7 +64,15 @@ RequestSchema.statics.createRequest = function (requestData, callback) {
 }
 
 RequestSchema.statics.getRequests = function (filters, callback) {
-    const page = isNaN(Number(filters.page)) ? 0 : Math.abs(Number(filters.page));
+    console.log(filters);
+    const startRow = isNaN(Number(filters.startRow)) ?
+        0 : Math.abs(Number(filters.startRow));
+
+    let size = isNaN(Number(filters.size)) ?
+        LIMIT : Math.abs(Number(filters.size));
+
+    if (size > LIMIT) size = LIMIT;
+
 
     const query = {};
 
@@ -82,18 +84,14 @@ RequestSchema.statics.getRequests = function (filters, callback) {
         query.material = filters.material;
     }
 
-    if (_.isString(filters.category)) {
+    if (_.isString(filters.category) && filters.category.trim()) {
         const category = _.toUpper(filters.category.trim());
-        if (categories_obj[category]) {
-            query.category = kind;
-        }
+        query.category = category;
     }
 
-    if (_.isString(filters.status)) {
+    if (_.isString(filters.status) && filters.status.trim()) {
         const status = _.toUpper(filters.status.trim());
-        if (request_status_obj[status]) {
-            query.status = status;
-        }
+        query.status = status;
     }
 
     const that = this;
@@ -103,9 +101,10 @@ RequestSchema.statics.getRequests = function (filters, callback) {
                 .find(query)
                 .select('-__v')
                 .sort({ created_at: -1 })
-                .populate('reader', { firstname: 1, lastname: 1 })
-                .skip(page * LIMIT)
-                .limit(LIMIT)
+                .populate('provider', { legal_name: 1, display_name: 1 })
+                .populate('material', { title: 1, subtitle: 1 })
+                .skip(startRow)
+                .limit(size)
                 .lean()
                 .exec(asyncCallback);
         },
@@ -117,6 +116,33 @@ RequestSchema.statics.getRequests = function (filters, callback) {
     }, callback);
 
 
+}
+
+RequestSchema.statics.countRequestsByStatus = function (filters, callback) {
+    const aggregation = [];
+
+    if (filters.provider && mongoose.isValidObjectId(filters.provider)) {
+        aggregation.push = {
+            $match: {
+                provider: mongoose.Types.ObjectId(filters.provider),
+            }
+        };
+    }
+
+    aggregation.push({
+        $group: {
+            _id: "$status",
+            count: { $sum: 1 },
+        }
+    })
+
+    this.model(COLLECTION).aggregate(aggregation).exec((err, results) => {
+        if (err) return callback(err);
+        return callback(null, results);
+        // results.forEach((group) => {
+
+        // });
+    });
 }
 
 module.exports = mongoose.model(COLLECTION, RequestSchema);
