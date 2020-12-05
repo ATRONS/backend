@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 const luxon = require('luxon');
+const settings = require('../defaults/settings');
 
 const COLLECTION = 'invoices';
-
-const invoice_types = require('./constants/invoice_types');
+const invoice_types = settings.INVOICE_TYPES;
 
 const InvoiceSchema = mongoose.Schema({
-    kind: { type: String, required: true, enum: Object.keys(invoice_types) },
+    kind: { type: String, required: true, enum: Object.values(invoice_types) },
 
     reader: {
         type: mongoose.Types.ObjectId,
