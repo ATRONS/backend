@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
 const _ = require('lodash');
 const luxon = require('luxon');
+const settings = require('../defaults/settings');
 
 const COLLECTION = 'transactions';
 const LIMIT = 10;
 
-const invoice_types = require('./constants/invoice_types');
+const invoice_types = settings.INVOICE_TYPES;
 
 const TransactionSchema = mongoose.Schema({
     kind: {
@@ -195,8 +196,8 @@ TransactionSchema.statics.earningsByMaterials = function (matIds, callback) {
         {
             $group: {
                 _id: "$material",
-                amount: { $sum: "$amount" },
-                count: { $sum: 1 },
+                total_earnings: { $sum: "$amount" },
+                total_sells: { $sum: 1 },
             }
         },
         { $sort: { _id: -1, }, },
@@ -212,11 +213,7 @@ TransactionSchema.statics.earningByMaterial = function (matId, callback) {
         },
         {
             $group: {
-                _id: {
-                    day: { $dayOfMonth: "$created_at" },
-                    month: { $month: "$created_at" },
-                    year: { $year: "$created_at" }
-                },
+                _id: "$material",
                 total_earnings: { $sum: "$amount" },
                 total_sells: { $sum: 1 }
             }
