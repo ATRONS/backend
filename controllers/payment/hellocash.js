@@ -39,7 +39,7 @@ ctrl.webHook = function (req, res, next) {
 
     const payload = req.body;
     const hmac = crypto.createHmac('sha256', Buffer.from(process.env.HELLOCASH_CONNECTION_SECRET));
-    const hmacHex = hmac.update(payload).digest('hex');
+    const hmacHex = hmac.update(JSON.stringify(payload)).digest('hex');
     const hmacIsCorrect = req.headers['X-Api-Hmac'] === hmacHex;
 
     logger.info(payload);
@@ -61,6 +61,13 @@ ctrl.webHook = function (req, res, next) {
         status: payload.status,
         transaction_dump: payload,
     };
+
+    // save PURCHASE or WITHDRAWAL transaction
+    // save 
+    // things to do
+    // - save a PURCHASE or WITHDRAWAL transaction
+    // - save a SERVICE_FEE transaction for the PURCHASE or WITHDRAWAL
+    // - update providers balance, also the companies balance.
 
     asyncLib.waterfall([
         function (callback) {
