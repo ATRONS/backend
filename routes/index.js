@@ -145,6 +145,12 @@ router.get(
     authMiddleware.isVerifiedProvider,
     providerCtrl.getOwnRequests);
 
+router.get(
+    providerBase + '/requests/withdrawable',
+    authMiddleware.authenticateUser,
+    authMiddleware.isVerifiedProvider,
+    providerCtrl.getWithdrawalInfo);
+
 router.post(
     providerBase + '/requests',
     authMiddleware.authenticateUser,
