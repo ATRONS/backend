@@ -12,7 +12,7 @@ const jwtCtrl = require('../auth/jwt');
 const genericCtrl = require('./generic');
 const helloCashCtrl = require('./payment/hellocash');
 const validator = require('../helpers/validator');
-
+const settings = require('../defaults/settings');
 const luxon = require('luxon');
 const asyncLib = require('async');
 const {
@@ -189,6 +189,7 @@ ctrl.purchaseMaterial = function (req, res, next) {
             }
 
             InvoiceSchema.createInvoice({
+                kind: settings.INVOICE_TYPES.PURCHASE,
                 reader: req.user._id,
                 provider: material.provider._id,
                 material: material._id,
@@ -207,8 +208,6 @@ ctrl.purchaseMaterial = function (req, res, next) {
 
                 invoice_dump: invoice,
             }, defaultHandler(res));
-
-            newInvoice.save(defaultHandler(res));
         });
     });
 }
