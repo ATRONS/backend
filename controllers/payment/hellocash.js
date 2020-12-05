@@ -38,6 +38,8 @@ ctrl.webHook = function (req, res, next) {
     res.end(); // won't be sending back any data.
 
     const payload = req.body;
+    console.log(payload);
+    return;
     const hmac = crypto.createHmac('sha256', Buffer.from(process.env.HELLOCASH_CONNECTION_SECRET));
     const hmacHex = hmac.update(JSON.stringify(payload)).digest('hex');
     const hmacIsCorrect = req.headers['X-Api-Hmac'] === hmacHex;
