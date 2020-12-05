@@ -273,6 +273,7 @@ ctrl.getMaterial = function (req, res, next) {
         response.reports = results.sells.length ?
             results.sells[0] :
             {
+                _id: req.params.id,
                 total_earnings: 0,
                 total_sells: 0,
             };
