@@ -91,7 +91,7 @@ ctrl.login = function (req, res, next) {
             user.addSessionId(token.sessionId);
             user.save((err, saved) => {
                 if (err) {
-                    loggers.error(err);
+                    logger.error(err);
                     return failure(res, 'Internal Error', 500);
                 }
                 const user_info = saved.toObject();
@@ -152,7 +152,7 @@ ctrl.getMaterial = function (req, res, next) {
             response.more_from_provider.materials = moreFromProvider.materials
                 .filter((each) => each._id.toHexString() !== req.params.id);;
             response.material_ratings = results.ratings;
-            response.readers_last_rating = results.readerRating;
+            response.readers_last_rating = results.readerRating || { value: 0, description: '' };
             success(res, response);
         });
     });
