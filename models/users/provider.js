@@ -146,7 +146,7 @@ ProviderSchema.statics.getProvider = function (oId, callback) {
         .exec(callback);
 }
 
-ProviderSchema.statics.search = function (filters, callback) {
+ProviderSchema.statics.search = function (filters, callback, onlyActive = true) {
     const startRow = isNaN(Number(filters.startRow)) ?
         0 : Math.abs(Number(filters.startRow));
 
@@ -173,6 +173,7 @@ ProviderSchema.statics.search = function (filters, callback) {
     }
 
     query['auth.deleted'] = false;
+    if (onlyActive) query.active = onlyActive;
 
     const that = this;
     asyncLib.parallel({
@@ -195,11 +196,15 @@ ProviderSchema.statics.search = function (filters, callback) {
 }
 
 ProviderSchema.statics.softDelete = function (id, callback) {
-    if (!mongoose.isValidObjectId(oId)) return callback({ custom: 'Invalid Id', status: 400 });
+    if (!mongoose.isValidObjectId(id)) return callback({ custom: 'Invalid Id', status: 400 });
 
     this.model(COLLECTION).
-        updateOne({ _id: id }, { $set: { 'auth.deleted': true } }).
-        exec(callback);
+        updateOne({ _id: id, 'auth.deleted': false }, { $set: { 'auth.deleted': true } }).
+        exec((err, result) => {
+            if (err) return callback(err);
+            if (!result.nModified) return callback({ custom: 'Provider not deleted', status: 400 });
+            return callback(null, { message: 'Provider successfully deleted' });
+        });
 }
 
 ProviderSchema.statics.addBalance = function (oId, amount, callback) {
