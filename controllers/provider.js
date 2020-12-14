@@ -65,21 +65,18 @@ ctrl.createRequest = function (req, res, next) {
 
     // special attention to withdrawal requests.
     if (category === settings.REQUEST_CATEGORIES.WITHDRAWAL) {
-        let amount = req.body.amount;
-        if (isNaN(Number(amount))) return failure(res, 'Invalid amount');
-        if (!_.isFinite(Number(amount))) return failure(res, 'Invalid amount');
+        if (isNaN(Number(requestInfo.amount))) return failure(res, 'Invalid amount');
+        if (!_.isFinite(Number(requestInfo.amount))) return failure(res, 'Invalid amount');
 
-        amount = Number(req.body.amount);
-        if (amount < 0) return failure(res, 'Withdraw amount cannot be negative');
-        if (amount < settings.MINIMUM_WITHDRAWABLE_AMOUNT) {
+        requestInfo.amount = Number(requestInfo.amount);
+        if (requestInfo.amount < 0) return failure(res, 'Withdraw amount cannot be negative');
+        if (requestInfo.amount < settings.MINIMUM_WITHDRAWABLE_AMOUNT) {
             return failure(res, 'Amount less than minimum withdrawable amount');
         }
 
         const balance = req.user.balance;
-        if (amount > balance) return failure(res, 'Insufficient balance');
-        requestInfo.amount = amount;
+        if (requestInfo.amount > balance) return failure(res, 'Insufficient balance');
     }
-
     RequestSchema.createRequest(requestInfo, defaultHandler(res));
 }
 
