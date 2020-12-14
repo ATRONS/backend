@@ -37,6 +37,34 @@ ctrl.createInvoice = function (invoiceInfo, callback) {
         .catch(err => callback(err));
 }
 
+ctrl.transfer = function (transferInfo, callback) {
+    const url = urls.HELLOCASH.TRANSFER;
+    const config = {
+        headers: {
+            Authorization: ctrl.getBearerToken(),
+        }
+    };
+
+    axios.post(url, transferInfo, config)
+        .then(res => res.data)
+        .then(data => callback(null, data))
+        .catch(err => callback(err));
+}
+
+ctrl.authorizeTransfer = function (authorizeInfo, callback) {
+    const url = urls.HELLOCASH.AUTHORIZE;
+    const config = {
+        headers: {
+            Authorization: ctrl.getBearerToken(),
+        }
+    };
+
+    axios.post(url, authorizeInfo, config)
+        .then(res => res.data)
+        .then(data => callback(null, data))
+        .catch(err => callback(err));
+}
+
 ctrl.webHook = function (req, res, next) {
     res.end(); // won't be sending back any data.
 
