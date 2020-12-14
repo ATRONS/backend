@@ -7,6 +7,10 @@ ctrl.getRandomBytes = function (length = 48) {
     return crypto.randomBytes(Math.floor(length / 2)).toString('hex');
 }
 
+ctrl.getRandom6DigitsString = function () {
+    return Number(Math.floor(Math.random() * 1000000)).toString();
+}
+
 ctrl.createToken = function (payload, secret, callback) {
     payload.sessionId = this.getRandomBytes();
     jwt.sign(payload, secret, (err, token) => {
