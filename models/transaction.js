@@ -77,6 +77,7 @@ TransactionSchema.statics.getSellsReportByProvider = function (provider, lastXDa
             {
                 $match: {
                     provider: mongoose.Types.ObjectId(provider),
+                    kind: settings.INVOICE_TYPES.PURCHASE,
                     created_at: { $gte: xdaysAgo }
                 }
             },
@@ -141,6 +142,7 @@ TransactionSchema.statics.getBestSellersByProvider = function (provider, callbac
         {
             $match: {
                 provider: mongoose.Types.ObjectId(provider),
+                kind: settings.INVOICE_TYPES.PURCHASE,
             }
         },
         {
@@ -162,6 +164,7 @@ TransactionSchema.statics.getTotalSellsByProvider = function (provider, callback
         {
             $match: {
                 provider: mongoose.Types.ObjectId(provider),
+                kind: settings.INVOICE_TYPES.PURCHASE,
             }
         },
         {
@@ -191,6 +194,7 @@ TransactionSchema.statics.earningsByMaterials = function (matIds, callback) {
         {
             $match: {
                 material: { $in: matIds },
+                kind: settings.INVOICE_TYPES.PURCHASE,
             }
         },
         {
@@ -209,7 +213,10 @@ TransactionSchema.statics.earningByMaterial = function (matId, callback) {
 
     this.model(COLLECTION).aggregate([
         {
-            $match: { material: mongoose.Types.ObjectId(matId) }
+            $match: {
+                material: mongoose.Types.ObjectId(matId),
+                kind: settings.INVOICE_TYPES.PURCHASE,
+            }
         },
         {
             $group: {
@@ -240,6 +247,7 @@ TransactionSchema.statics.earningByMaterialInDuration = function (matId, filters
         {
             $match: {
                 material: mongoose.Types.ObjectId(matId),
+                kind: settings.INVOICE_TYPES.PURCHASE,
                 created_at: {
                     $gte: start,
                     $lte: end,
@@ -277,6 +285,7 @@ TransactionSchema.statics.earningsByProviderBnDays = function (provider, filters
 
     const query = {
         provider: provider,
+        kind: settings.INVOICE_TYPES.PURCHASE,
         created_at: {
             $gte: start,
             $lte: end,
@@ -355,10 +364,10 @@ TransactionSchema.statics.getProviderTransactions = function (provider, filters,
 
     const query = {
         provider: provider,
-        // created_at: {
-        //     $gte: start,
-        //     $lte: end,
-        // }
+        created_at: {
+            $gte: start,
+            $lte: end,
+        }
     }
 
     this.model(COLLECTION)
