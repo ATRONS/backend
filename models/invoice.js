@@ -59,8 +59,10 @@ InvoiceSchema.statics.updateByTracenumber = function (tracenumber, updates, call
         status: invoiceInfo.status,
         transaction_dump: invoiceInfo,
     };
+
     this.model(COLLECTION)
         .findOneAndUpdate({ tracenumber: tracenumber }, { $set: updateObj }, { new: true })
+        .populate('material', 'title subtitle _id')
         .exec(callback);
 }
 
