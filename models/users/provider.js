@@ -202,4 +202,12 @@ ProviderSchema.statics.softDelete = function (id, callback) {
         exec(callback);
 }
 
+ProviderSchema.statics.addBalance = function (id, amount, callback) {
+    if (!mongoose.isValidObjectId(oId)) return callback({ custom: 'Invalid Id', status: 400 });
+    if (!_.isFinite(Number(amount))) return callback({ custom: 'Invalid amount', status: 400 });
+    if (Number(amount) < 0) return callback({ custom: 'Negative amount not allowed', status: 400 });
+
+    this.model(COLLECTION).updateOne({ _id: id }, { $inc: { balance: Number(amount) } }).exec(callback);
+}
+
 module.exports = mongoose.model(COLLECTION, ProviderSchema);
