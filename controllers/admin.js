@@ -2,13 +2,17 @@ const { failure, success, errorResponse, defaultHandler } = require("../helpers/
 const ProviderSchema = require('../models/users/provider');
 const MaterialSchema = require('../models/material');
 const TransactionSchema = require('../models/transaction');
+const InvoiceSchema = require('../models/invoice');
 const RequestSchema = require('../models/request');
 const genericCtrl = require('./generic');
 const jwtCtrl = require('../auth/jwt');
+const hellocashCtrl = require('./payment/hellocash');
 const asyncLib = require('async');
+const uuid = require('uuid');
 const _ = require('lodash');
 const ObjectId = require("mongoose").Types.ObjectId;
 const settings = require("../defaults/settings");
+const emailer = require("../emailer/emailer");
 
 const ctrl = {};
 
@@ -56,9 +60,7 @@ ctrl.deleteProvider = function (req, res, next) {
     ProviderSchema.softDelete(req.params.id, function (err, result) {
         if (err) return errorResponse(err, res);
 
-        return result.nModified === 1 ?
-            success(res, 'Provider deleted') :
-            failure(res, 'Could not delete provider');
+        return success(res, { message: 'Provider deleted' });
     });
 }
 
@@ -196,24 +198,127 @@ ctrl.completeRequest = function (req, res, next) {
         if (err) return errorResponse(err, res);
         if (!request) return failure(res, 'Request not found', 404);
 
+        if (request.status === settings.REQUEST_STATUS.ACCEPTED) {
+            return failure(res, 'Request already Completed');
+        }
+
+        if (request.status === settings.REQUEST_STATUS.IN_PROCESSING) {
+            return failure(res, 'Request already in processing');
+        }
+
         if (status === settings.REQUEST_STATUS.ACCEPTED) {
             if (request.category === settings.REQUEST_CATEGORIES.WITHDRAWAL) {
+                const providerId = request.provider._id;
                 const providerPhone = request.provider.phone;
                 const amount = request.amount;
-                return success(res, 'not implemented yet');
-                // create an invoice here and handle it on the webhook.
+
+                ProviderSchema.getProvider(providerId, (err, provider) => {
+                    if (err) return errorResponse(err, res);
+                    if (!provider) return failure(res, 'Provider not found');
+
+                    if (provider.balance < settings.MINIMUM_WITHDRAWABLE_AMOUNT ||
+                        amount > provider.balance) {
+                        return failure(res, 'Can not pay provider, balance insufficient for transfer');
+                    }
+
+                    const transferInfo = {
+                        amount: amount,
+                        description: 'Payment to ' + provider.legal_name,
+                        // to: providerPhone,
+                        to: '+251933720637',
+                        tracenumber: uuid.v4(),
+                    };
+
+                    hellocashCtrl.transfer(transferInfo, (err, invoice) => {
+                        console.log(invoice);
+                        if (err) return failure(res, 'Could not transfer');
+                        // const authorizeInfo = { tranferids: [invoice.id] };
+                        // hellocashCtrl.authorizeTransfer(authorizeInfo, (err, authorized) => {
+                        //     console.log(err);
+                        //     if (err) return failure(res, 'Transfer not authorized');
+
+                        // InvoiceSchema.createInvoice({
+                        //     kind: settings.INVOICE_TYPES.WITHDRAWAL,
+                        //     provider: material.provider._id,
+
+                        //     amount: invoice.amount,
+                        //     currency: invoice.currency,
+                        //     payer: invoice.from,
+                        //     receiver: invoice.to,
+                        //     date: invoice.date,
+                        //     expires: invoice.expires,
+
+                        //     invoice_id: invoice.id,
+                        //     tracenumber: invoice.tracenumber,
+                        //     status: invoice.status,
+
+                        //     invoice_dump: invoice,
+                        // }, defaultHandler(res));
+
+                        // console.log(invoice);
+                        // console.log(authorized);
+
+                        // });
+                        request.status = settings.REQUEST_STATUS.IN_PROCESSING;
+                        request.save(defaultHandler(res));
+                    });
+                });
             } else if (request.category === settings.REQUEST_CATEGORIES.MATERIAL_REMOVAL) {
-                const materialId = request.material;
+                if (!request.material) return failure(res, 'Material not found');
+                const materialId = request.material._id;
                 const providerId = request.provider._id;
-                MaterialSchema.softDeleteWithProviderCheck(materialId, providerId, defaultHandler(res));
+                MaterialSchema.softDeleteWithProviderCheck(materialId, providerId, (err, result) => {
+                    if (err) return errorResponse(err, res);
+                    request.status = settings.REQUEST_STATUS.ACCEPTED;
+                    request.save((err, savedRequest) => {
+                        if (err) return errorResponse(err, res);
+
+                        const providerInfo = {
+                            email: request.provider.email,
+                            legal_name: request.provider.legal_name,
+                        };
+                        const materialInfo = {
+                            title: request.material.title,
+                            subtitle: request.material.subtitle
+                        };
+                        emailer.sendMaterialRemovedEmail(providerInfo, materialInfo);
+                        return success(res, savedRequest);
+                    });
+                });
+
             } else if (request.category === settings.REQUEST_CATEGORIES.DELETE_ACCOUNT) {
+                ProviderSchema.softDelete(request.provider._id, (err, result) => {
+                    if (err) return errorResponse(err, res);
+
+                    request.status = settings.REQUEST_STATUS.ACCEPTED;
+                    request.save(defaultHandler(res));
+                });
             }
         } else if (status === settings.REQUEST_STATUS.DENIED) {
             request.notes = req.body.reason || "Request denied";
             request.status = settings.REQUEST_STATUS.DENIED;
-            request.save(defaultHandler(res));
+            request.save((err, savedRequest) => {
+                if (err) return errorResponse(err, res);
+                let message = '';
+                switch (request.category) {
+                    case settings.REQUEST_CATEGORIES.DELETE_ACCOUNT:
+                        message = 'deleting your Atrons account';
+                        break;
+                    case settings.REQUEST_CATEGORIES.MATERIAL_REMOVAL:
+                        message = 'removing A material from Atrons';
+                        break;
+                    default:
+                        message = `withdrawing ${request.amount} from your Atrons account`;
+                        break;
+                }
+                const recepientInfo = {
+                    email: request.provider.email,
+                    legal_name: request.provider.legal_name,
+                };
+                emailer.sendRequestDeniedEmail(recepientInfo, message);
+                return success(res, savedRequest);
+            });
         } else return failure(res, 'Something went wrong', 500);
-
     });
 }
 
