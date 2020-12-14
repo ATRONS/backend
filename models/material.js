@@ -269,4 +269,14 @@ MaterialSchema.statics.softDelete = function (oId, callback) {
         .exec(callback);
 }
 
+MaterialSchema.statics.softDeleteWithProviderCheck = function (matId, providerId, callback) {
+    if (!mongoose.isValidObjectId(matId) || !mongoose.isValidObjectId(providerId)) {
+        return callback({ custom: 'Invalid Id', status: 400 });
+    }
+
+    this.model(COLLECTION)
+        .updateOne({ _id: matId, provider: providerId }, { $set: { deleted: true } })
+        .exec(callback);
+}
+
 module.exports = mongoose.model(COLLECTION, MaterialSchema);
