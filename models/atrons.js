@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const luxon = require('luxon');
+const _ = require('lodash');
 
 const COLLECTION = 'atrons.company';
 
