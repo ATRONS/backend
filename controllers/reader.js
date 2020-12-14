@@ -10,6 +10,7 @@ const _ = require('lodash');
 
 const jwtCtrl = require('../auth/jwt');
 const genericCtrl = require('./generic');
+const emailer = require('../emailer/emailer');
 const helloCashCtrl = require('./payment/hellocash');
 const validator = require('../helpers/validator');
 const settings = require('../defaults/settings');
@@ -38,8 +39,8 @@ ctrl.signup = function (req, res, next) {
         iv: jwtCtrl.getRandomBytes(16),
         auth: {
             password: req.body.password,
-            verify_email_hash: jwtCtrl.getRandomBytes(),
-            verify_email_expire: inFifteenMinutes.valueOf(),
+            otp_key: jwtCtrl.getRandom6DigitsString(),
+            otp_expire: inFifteenMinutes.valueOf(),
         },
         preferences: req.body.preferences,
     });
@@ -52,13 +53,13 @@ ctrl.signup = function (req, res, next) {
         user.addSessionId(token.sessionId);
         user.save((err, savedUser) => {
             if (err) return errorResponse(err, res);
+            emailer.sendVerifyEmail(savedUser.email, savedUser.auth.otp_key);
 
             savedUser.auth = undefined;
             const response = {
                 user_info: savedUser,
                 token: token.token,
             };
-
             return success(res, response);
         });
     });
@@ -103,6 +104,38 @@ ctrl.login = function (req, res, next) {
             });
         });
     });
+}
+
+ctrl.verifyEmail = function (req, res, next) {
+    const otp_key = req.body.otp;
+    if (!_.isString(otp_key)) return failure(res, 'otp key required');
+    const now = luxon.DateTime.utc().valueOf();
+
+    if (req.user.auth.otp_key !== otp_key.trim()) {
+        return failure(res, 'Invalid otp key');
+    }
+
+    if (now > req.user.auth.otp_expire) return failure(res, 'OTP expired');
+
+    req.user.auth.verified = true;
+    req.user.save((err, savedUser) => {
+        if (err) return errorResponse(err, res);
+        return success(res, { message: 'Email validated' });
+    })
+}
+
+ctrl.resendVerification = function (req, res, next) {
+    const now = luxon.DateTime.utc();
+    const inFifteenMinutes = now.plus(luxon.Duration.fromObject({ minutes: 15 }));
+
+    req.user.auth.otp_key = jwtCtrl.getRandom6DigitsString();
+    req.user.auth.otp_expire = inFifteenMinutes.valueOf();
+
+    req.user.save((err, savedUser) => {
+        if (err) return errorResponse(err, res);
+        emailer.sendVerifyEmail(savedUser.email, savedUser.auth.otp_key);
+        return success(res, { message: 'Verification code sent' });
+    })
 }
 
 ctrl.logout = genericCtrl.logout;
@@ -184,7 +217,7 @@ ctrl.purchaseMaterial = function (req, res, next) {
 
         helloCashCtrl.createInvoice(invoiceInfo, (err, invoice) => {
             if (err) {
-                console.log(err);
+                logger.error(err);
                 return failure(res, 'Could not create Invoice', 500);
             }
 
@@ -202,7 +235,6 @@ ctrl.purchaseMaterial = function (req, res, next) {
                 expires: invoice.expires,
 
                 invoice_id: invoice.id,
-                invoice_code: invoice.code,
                 tracenumber: invoice.tracenumber,
                 status: invoice.status,
 
