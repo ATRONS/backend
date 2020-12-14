@@ -184,7 +184,13 @@ MaterialSchema.statics.search = function (filters, callback) {
     if (filters.search) {
         query.$text = { $search: filters.search, $caseSensitive: false };
     }
-    if (filters.type) query.type = filters.type.trim().toUpperCase();
+    if (filters.type) {
+        const matTypes = [];
+        for (eachType of filters.type.trim().toUpperCase().split('|')) {
+            if (eachType) matTypes.push(eachType);
+        }
+        if (matTypes.length) query.type = { $in: matTypes };
+    }
 
     if (filters.provider) {
         if (mongoose.isValidObjectId(filters.provider)) {
@@ -197,7 +203,7 @@ MaterialSchema.statics.search = function (filters, callback) {
         materials: function (asyncCallback) {
             that.model(COLLECTION)
                 .find(query)
-                .select('type title subtitle cover_img_url ISBN rating price edition created_at')
+                .select('type title subtitle cover_img_url ISBN rating price edition created_at published_date')
                 .sort({ created_at: -1 })
                 .populate('provider', { legal_name: 1, display_name: 1 })
                 .skip(startRow)
@@ -227,7 +233,14 @@ MaterialSchema.statics.minifiedSearch = function (filters, callback) {
     if (filters.search) {
         query.$text = { $search: filters.search, $caseSensitive: false };
     }
-    if (filters.type) query.type = filters.type.trim().toUpperCase();
+
+    if (filters.type) {
+        const matTypes = [];
+        for (eachType of filters.type.trim().toUpperCase().split('|')) {
+            if (eachType) matTypes.push(eachType);
+        }
+        if (matTypes.length) query.type = { $in: matTypes };
+    }
 
     if (filters.provider) {
         if (mongoose.isValidObjectId(filters.provider)) {
@@ -240,7 +253,7 @@ MaterialSchema.statics.minifiedSearch = function (filters, callback) {
         materials: function (asyncCallback) {
             that.model(COLLECTION)
                 .find(query)
-                .select('type title subtitle cover_img_url ISBN created_at')
+                .select('type title subtitle cover_img_url ISBN created_at published_date')
                 .skip(startRow)
                 .limit(size)
                 .lean()
@@ -266,7 +279,11 @@ MaterialSchema.statics.softDelete = function (oId, callback) {
 
     this.model(COLLECTION)
         .updateOne({ _id: oId }, { $set: { deleted: true } })
-        .exec(callback);
+        .exec((err, result) => {
+            if (err) return callback(err);
+            if (!result.nModified) return callback({ custom: 'Material not deleted', status: 400 });
+            return callback(null, { message: 'Material successfully deleted' });
+        });
 }
 
 MaterialSchema.statics.softDeleteWithProviderCheck = function (matId, providerId, callback) {
@@ -276,7 +293,11 @@ MaterialSchema.statics.softDeleteWithProviderCheck = function (matId, providerId
 
     this.model(COLLECTION)
         .updateOne({ _id: matId, provider: providerId }, { $set: { deleted: true } })
-        .exec(callback);
+        .exec((err, result) => {
+            if (err) return callback(err);
+            if (!result.nModified) return callback({ custom: 'Material not deleted', status: 400 });
+            return callback(null, { message: 'Material successfully deleted' });
+        });
 }
 
 module.exports = mongoose.model(COLLECTION, MaterialSchema);
