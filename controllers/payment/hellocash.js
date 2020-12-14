@@ -110,6 +110,7 @@ ctrl.webHook = function (req, res, next) {
                 const transactionInfo = {
                     kind: settings.INVOICE_TYPES.SERVICE_FEE,
                     amount: atronsShare,
+                    provider: updatedInvoice.provider,
                     tracenumber: updatedInvoice.tracenumber,
                     description: 'Service fee for ' + updatedInvoice.transaction_id,
                 };
@@ -121,6 +122,7 @@ ctrl.webHook = function (req, res, next) {
                 const transactionInfo = {
                     kind: settings.INVOICE_TYPES.TAX_FEE,
                     amount: taxShare,
+                    provider: updatedInvoice.provider,
                     tracenumber: updatedInvoice.tracenumber,
                     description: 'Tax fee for ' + updatedInvoice.transaction_id,
                 };

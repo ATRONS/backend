@@ -21,7 +21,7 @@ const TransactionSchema = mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: 'providers',
         index: true,
-        required: function () { return this.kind !== invoice_types.SERVICE_FEE; }
+        required: true,
     },
 
     reader: {

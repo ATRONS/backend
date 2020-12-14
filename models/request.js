@@ -28,9 +28,7 @@ const RequestSchema = mongoose.Schema({
         type: Number,
         min: 0,
         required: function () {
-            return
-            this.category === categories_obj.PAYMENT ||
-                this.category === categories_obj.WITHDRAWAL;
+            return this.category === categories_obj.WITHDRAWAL;
         }
     },
 
