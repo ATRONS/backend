@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const luxon = require('luxon');
 const settings = require('../defaults/settings');
+const _ = require('lodash');
 
 const COLLECTION = 'invoices';
 const invoice_types = settings.INVOICE_TYPES;

@@ -215,8 +215,7 @@ ctrl.purchaseMaterial = function (req, res, next) {
 ctrl.rateMaterial = function (req, res, next) {
     asyncLib.waterfall([
         function (callback) {
-            return callback(null, true);
-            // TransactionSchema.readerOwnsMaterial(req.user._id, req.params.id, callback);
+            TransactionSchema.readerOwnsMaterial(req.user._id, req.params.id, callback);
         },
         function (readerOwnsMaterial, callback) {
             if (!readerOwnsMaterial) {
