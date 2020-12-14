@@ -12,18 +12,18 @@ class EmailSender {
                 clientId: process.env.EMAIL_CLIENT_ID,
                 clientSecret: process.env.EMAIL_CLIENT_SECRET,
                 refreshToken: process.env.EMAIL_REFRESH_TOKEN,
-                accessToken: process.env.EMAIL_ACCESS_TOKEN,
+                // accessToken: process.env.EMAIL_ACCESS_TOKEN,
                 expires: 1484314697598
             }
         });
     }
 
-    async sendVerifyEmail(recepient, url) {
+    async sendVerifyEmail(recepient, code) {
         try {
             const mailHTML = `
             <div>
-                <h2>Verify your email to start using Atrons</h2>
-                <a href="${url}">Verify Email</a>
+                <h1>Verify your email to start using Atrons</h1>
+                <h2>Enter ${code} to activate your account </h2>
             </div>
             `;
 
@@ -35,8 +35,63 @@ class EmailSender {
             });
 
             logger.info('verification email sent');
+            console.log(mailHTML);
             return true;
         } catch (err) {
+            console.log(err);
+            logger.error(err);
+        }
+        return false;
+    };
+
+    async sendMaterialRemovedEmail(recepientInfo, matInfo) {
+        try {
+            const mailHTML = `
+            <div>
+                <h1>Atrons, material removal notice</h1>
+                <h2>Dear ${recepientInfo.legal_name}, ${matInfo.title} ${matInfo.subtitle} 
+                has been Removed as per your request</h2>
+            </div>
+            `;
+
+            await this.transporter.sendMail({
+                from: process.env.EMAIL,
+                to: recepientInfo.email,
+                subject: `Atrons, material removal notice`,
+                html: mailHTML,
+            });
+
+            logger.info('verification email sent');
+            console.log(mailHTML);
+            return true;
+        } catch (err) {
+            console.log(err);
+            logger.error(err);
+        }
+        return false;
+    };
+
+    async sendRequestDeniedEmail(recepientInfo, requestDescription) {
+        try {
+            const mailHTML = `
+            <div>
+                <h1>Atrons, Request denial notice</h1>
+                <h2>Dear ${recepientInfo.legal_name}, Your request for ${requestDescription}
+                has been Denied. Contact provider support for more.</h2>
+            </div>
+            `;
+            await this.transporter.sendMail({
+                from: process.env.EMAIL,
+                to: recepientInfo.email,
+                subject: `Atrons, material removal notice`,
+                html: mailHTML,
+            });
+
+            logger.info('verification email sent');
+            console.log(mailHTML);
+            return true;
+        } catch (err) {
+            console.log(err);
             logger.error(err);
         }
         return false;
