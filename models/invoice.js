@@ -12,16 +12,26 @@ const InvoiceSchema = mongoose.Schema({
     reader: {
         type: mongoose.Types.ObjectId,
         sparse: true,
+        ref: 'readers',
         required: function () { return this.kind === invoice_types.PURCHASE; }
 
     },
     material: {
         type: mongoose.Types.ObjectId,
+        ref: 'materials',
         sparse: true,
         required: function () { return this.kind === invoice_types.PURCHASE; }
     },
 
-    provider: { type: mongoose.Types.ObjectId, required: true, index: true },
+    provider: {
+        type: mongoose.Types.ObjectId,
+        ref: 'providers',
+        sparse: true,
+        required: function () {
+            return this.kind === invoice_types.PURCHASE ||
+                this.kind === invoice_types.WITHDRAWAL
+        }
+    },
 
     amount: { type: Number, required: true, min: 0 },
     payer: { type: String, required: true, index: true },
