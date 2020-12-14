@@ -8,6 +8,7 @@ const jwtCtrl = require('../auth/jwt');
 const asyncLib = require('async');
 const _ = require('lodash');
 const ObjectId = require("mongoose").Types.ObjectId;
+const settings = require("../defaults/settings");
 
 const ctrl = {};
 
@@ -20,13 +21,15 @@ ctrl.updateProfile = function (req, res, next) { res.end('admin update profile')
 
 // ----------------------- others -----------------------------------------
 ctrl.initialData = function (req, res, next) {
-    req.user.auth = undefined;
-
-    const response = {
-        user_info: req.user,
-    };
-
-    return success(res, response);
+    asyncLib.parallel({
+        pending_requests_count: function (callback) {
+            RequestSchema.getPendingRequestsCount(callback);
+        },
+        user_info: function (callback) {
+            req.user.auth = undefined;
+            return callback(null, req.user);
+        }
+    }, defaultHandler(res));
 }
 
 ctrl.createProvider = function (req, res, next) {
@@ -181,6 +184,37 @@ ctrl.getAllTags = genericCtrl.getAllTags;
 
 ctrl.getRequests = function (req, res, next) {
     RequestSchema.getRequests(req.query, defaultHandler(res));
+}
+
+ctrl.completeRequest = function (req, res, next) {
+    if (!_.isString(req.body.status)) return failure(res, 'Invalid status');
+    let status = _.toUpper(req.body.status.trim());
+    if (!settings.REQUEST_STATUS[status]) return failure(res, 'Unknown status');
+    if (status === settings.REQUEST_STATUS.PENDING) return failure(res, 'change to PENDING not allowed');
+
+    RequestSchema.getRequest(req.params.id, (err, request) => {
+        if (err) return errorResponse(err, res);
+        if (!request) return failure(res, 'Request not found', 404);
+
+        if (status === settings.REQUEST_STATUS.ACCEPTED) {
+            if (request.category === settings.REQUEST_CATEGORIES.WITHDRAWAL) {
+                const providerPhone = request.provider.phone;
+                const amount = request.amount;
+                return success(res, 'not implemented yet');
+                // create an invoice here and handle it on the webhook.
+            } else if (request.category === settings.REQUEST_CATEGORIES.MATERIAL_REMOVAL) {
+                const materialId = request.material;
+                const providerId = request.provider._id;
+                MaterialSchema.softDeleteWithProviderCheck(materialId, providerId, defaultHandler(res));
+            } else if (request.category === settings.REQUEST_CATEGORIES.DELETE_ACCOUNT) {
+            }
+        } else if (status === settings.REQUEST_STATUS.DENIED) {
+            request.notes = req.body.reason || "Request denied";
+            request.status = settings.REQUEST_STATUS.DENIED;
+            request.save(defaultHandler(res));
+        } else return failure(res, 'Something went wrong', 500);
+
+    });
 }
 
 module.exports = ctrl;
