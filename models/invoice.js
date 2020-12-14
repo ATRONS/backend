@@ -55,10 +55,10 @@ InvoiceSchema.statics.updateByTracenumber = function (tracenumber, updates, call
     if (!_.isString(tracenumber)) return callback({ custom: 'Invalid tracenumber', status: 400 });
 
     const updateObj = {
-        transaction_fee: invoiceInfo.fee,
-        transaction_id: invoiceInfo.id,
-        status: invoiceInfo.status,
-        transaction_dump: invoiceInfo,
+        transaction_fee: updates.fee,
+        transaction_id: updates.id,
+        status: updates.status,
+        transaction_dump: updates.transaction_dump,
     };
 
     this.model(COLLECTION)
