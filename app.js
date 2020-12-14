@@ -32,6 +32,7 @@ async.series([
         const url = process.env.MONGO_URL;
         db.init(url, callback);
     },
+    populate.createAtronsAccount,
     populate.createDefaultAdmin,
     populate.populateTags,
 ], function (err, results) {
