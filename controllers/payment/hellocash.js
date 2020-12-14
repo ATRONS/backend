@@ -100,7 +100,7 @@ ctrl.webHook = function (req, res, next) {
                     amount: updatedInvoice.amount,
                     tracenumber: updatedInvoice.tracenumber,
                     transaction_fee: updatedInvoice.transaction_fee,
-                    description: 'Purchase for ' + updatedInvoice.material.title + ' ' + updatedInvoice.subtitle,
+                    description: 'Purchase for ' + updatedInvoice.material.title,
                 };
                 TransactionSchema.createTransaction(transactionInfo, callback);
             });
@@ -112,7 +112,7 @@ ctrl.webHook = function (req, res, next) {
                     amount: atronsShare,
                     provider: updatedInvoice.provider,
                     tracenumber: updatedInvoice.tracenumber,
-                    description: 'Service fee for ' + updatedInvoice.transaction_id,
+                    description: 'Service fee for ' + tracenumber,
                 };
                 TransactionSchema.createTransaction(transactionInfo, callback);
             });
@@ -124,7 +124,7 @@ ctrl.webHook = function (req, res, next) {
                     amount: taxShare,
                     provider: updatedInvoice.provider,
                     tracenumber: updatedInvoice.tracenumber,
-                    description: 'Tax fee for ' + updatedInvoice.transaction_id,
+                    description: 'Tax fee for ' + tracenumber,
                 };
                 TransactionSchema.createTransaction(transactionInfo, callback);
             });
