@@ -82,7 +82,14 @@ ctrl.webHook = function (req, res, next) {
 
             // update providers balance
             tasks.push(function (callback) {
-                ProviderSchema.addBalance(updatedInvoice.provider, providerShare, callback);
+                console.log('PROVIDER ID WHEN TRYING TO UPDATE HIS/HER BALANCE');
+                console.log(updatedInvoice.provider);
+                ProviderSchema.addBalance(updatedInvoice.provider, providerShare, (err, result) => {
+                    if (err) return callback(err);
+                    console.log('RESULT IS');
+                    console.log(result);
+                    return callback(null, result);
+                });
             });
 
             // update companies balance and tax amount
