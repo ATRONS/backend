@@ -13,6 +13,7 @@ module.exports = {
 
     REQUEST_STATUS: {
         PENDING: "PENDING",
+        IN_PROCESSING: "IN_PROCESSING",
         DENIED: "DENIED",
         ACCEPTED: "ACCEPTED"
     },
