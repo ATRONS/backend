@@ -23,7 +23,7 @@ const RequestSchema = mongoose.Schema({
     },
     category: { type: String, required: true, enum: categories, index: true },
     description: { type: String, default: "" },
-    notes: { type: String, default: "" },
+    notes: { type: String, default: "", trim: true },
 
     amount: {
         type: Number,
@@ -67,7 +67,8 @@ RequestSchema.statics.getRequest = function (oId, callback) {
 
     this.model(COLLECTION)
         .findOne({ _id: oId })
-        .populate('provider', { phone: 1 })
+        .populate('provider', { phone: 1, legal_name: 1, display_name: 1, email: 1, _id: 1 })
+        .populate('material', { title: 1, subtitle: 1, _id: 1 })
         .exec(callback);
 }
 
@@ -108,8 +109,8 @@ RequestSchema.statics.getRequests = function (filters, callback) {
                 .find(query)
                 .select('-__v')
                 .sort({ created_at: -1 })
-                .populate('provider', { legal_name: 1, display_name: 1 })
-                .populate('material', { title: 1, subtitle: 1 })
+                .populate('provider', { phone: 1, legal_name: 1, display_name: 1, email: 1, _id: 1 })
+                .populate('material', { title: 1, subtitle: 1, _id: 1 })
                 .skip(startRow)
                 .limit(size)
                 .lean()
