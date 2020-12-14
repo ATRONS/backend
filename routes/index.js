@@ -40,6 +40,18 @@ router.post(
     readerBase + '/signup',
     readerCtrl.signup);
 
+router.put(
+    readerBase + '/verifyEmail',
+    authMiddleware.authenticateUser,
+    authMiddleware.isUnverifiedReader,
+    readerCtrl.verifyEmail);
+
+router.get(
+    readerBase + '/resendVerificationCode',
+    authMiddleware.authenticateUser,
+    authMiddleware.isUnverifiedReader,
+    readerCtrl.resendVerification);
+
 router.post(
     readerBase + '/login',
     readerCtrl.login);
@@ -47,7 +59,7 @@ router.post(
 router.post(
     readerBase + '/logout',
     authMiddleware.authenticateUser,
-    authMiddleware.isReader,
+    authMiddleware.isVerifiedReader,
     readerCtrl.logout);
 
 router.post(
@@ -57,61 +69,61 @@ router.post(
 router.get(
     readerBase + '/initialData',
     authMiddleware.authenticateUser,
-    authMiddleware.isReader,
+    authMiddleware.isVerifiedReader,
     readerCtrl.initialData);
 
 router.put(
     readerBase + '/profile',
     authMiddleware.authenticateUser,
-    authMiddleware.isReader,
+    authMiddleware.isVerifiedReader,
     readerCtrl.updateProfile);
 
 router.get(
     readerBase + '/materials',
     authMiddleware.authenticateUser,
-    authMiddleware.isReader,
+    authMiddleware.isVerifiedReader,
     readerCtrl.searchMaterials);
 
 router.get(
     readerBase + '/materials/tags',
     authMiddleware.authenticateUser,
-    authMiddleware.isReader,
+    authMiddleware.isVerifiedReader,
     readerCtrl.getAllTags);
 
 router.get(
     readerBase + '/materials/:id',
     authMiddleware.authenticateUser,
-    authMiddleware.isReader,
+    authMiddleware.isVerifiedReader,
     readerCtrl.getMaterial);
 
 router.post(
     readerBase + '/materials/:id/purchase',
     authMiddleware.authenticateUser,
-    authMiddleware.isReader,
+    authMiddleware.isVerifiedReader,
     readerCtrl.purchaseMaterial);
 
 router.get(
     readerBase + '/materials/:id/ratings',
     authMiddleware.authenticateUser,
-    authMiddleware.isReader,
+    authMiddleware.isVerifiedReader,
     readerCtrl.getMaterialRatings);
 
 router.put(
     readerBase + '/materials/:id/ratings',
     authMiddleware.authenticateUser,
-    authMiddleware.isReader,
+    authMiddleware.isVerifiedReader,
     readerCtrl.rateMaterial);
 
 router.get(
     readerBase + '/providers',
     authMiddleware.authenticateUser,
-    authMiddleware.isReader,
+    authMiddleware.isVerifiedReader,
     readerCtrl.searchProviders);
 
 router.get(
     readerBase + '/providers/:id',
     authMiddleware.authenticateUser,
-    authMiddleware.isReader,
+    authMiddleware.isVerifiedReader,
     readerCtrl.getProvider);
 
 // ------------------------- provider area --------------------------
@@ -231,6 +243,12 @@ router.get(
     authMiddleware.isAdmin,
     adminCtrl.getRequests);
 
+router.put(
+    adminBase + '/users/providers/requests/:id',
+    authMiddleware.authenticateUser,
+    authMiddleware.isAdmin,
+    adminCtrl.completeRequest);
+
 router.get(
     adminBase + '/users/providers/:id',
     authMiddleware.authenticateUser,
@@ -329,7 +347,7 @@ router.post(
 router.get(
     mediaBase + '/materials/:id',
     authMiddleware.authenticateUser,
-    authMiddleware.isReader,
+    authMiddleware.isVerifiedReader,
     genericCtrl.downloadFile('materials'));
 
 router.get(
