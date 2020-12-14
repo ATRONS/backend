@@ -23,6 +23,7 @@ const RequestSchema = mongoose.Schema({
     },
     category: { type: String, required: true, enum: categories, index: true },
     description: { type: String, default: "" },
+    notes: { type: String, default: "" },
 
     amount: {
         type: Number,
@@ -49,11 +50,7 @@ const RequestSchema = mongoose.Schema({
 RequestSchema.index({ created_at: 1 });
 
 RequestSchema.pre('save', function (next) {
-    if (this.category !== categories_obj.PAYMENT) {
-        this.amount = undefined;
-    }
-
-    if (this.category !== categories_obj.MATERIAL_REMOVAL) {
+    if (this.category !== categories_obj.WITHDRAWAL) {
         this.amount = undefined;
     }
 
@@ -65,8 +62,16 @@ RequestSchema.statics.createRequest = function (requestData, callback) {
     this.model(COLLECTION).create(requestData, callback);
 }
 
+RequestSchema.statics.getRequest = function (oId, callback) {
+    if (!mongoose.isValidObjectId(oId)) return callback({ custom: 'Invalid Id', status: 400 });
+
+    this.model(COLLECTION)
+        .findOne({ _id: oId })
+        .populate('provider', { phone: 1 })
+        .exec(callback);
+}
+
 RequestSchema.statics.getRequests = function (filters, callback) {
-    console.log(filters);
     const startRow = isNaN(Number(filters.startRow)) ?
         0 : Math.abs(Number(filters.startRow));
 
@@ -120,31 +125,8 @@ RequestSchema.statics.getRequests = function (filters, callback) {
 
 }
 
-RequestSchema.statics.countRequestsByStatus = function (filters, callback) {
-    const aggregation = [];
-
-    if (filters.provider && mongoose.isValidObjectId(filters.provider)) {
-        aggregation.push = {
-            $match: {
-                provider: mongoose.Types.ObjectId(filters.provider),
-            }
-        };
-    }
-
-    aggregation.push({
-        $group: {
-            _id: "$status",
-            count: { $sum: 1 },
-        }
-    })
-
-    this.model(COLLECTION).aggregate(aggregation).exec((err, results) => {
-        if (err) return callback(err);
-        return callback(null, results);
-        // results.forEach((group) => {
-
-        // });
-    });
+RequestSchema.statics.getPendingRequestsCount = function (callback) {
+    this.model(COLLECTION).countDocuments({ status: request_status_obj.PENDING }).exec(callback);
 }
 
 module.exports = mongoose.model(COLLECTION, RequestSchema);
