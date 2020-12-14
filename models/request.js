@@ -27,7 +27,11 @@ const RequestSchema = mongoose.Schema({
     amount: {
         type: Number,
         min: 0,
-        required: function () { return this.category === categories_obj.PAYMENT; }
+        required: function () {
+            return
+            this.category === categories_obj.PAYMENT ||
+                this.category === categories_obj.WITHDRAWAL;
+        }
     },
 
     material: {
