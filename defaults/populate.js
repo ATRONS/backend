@@ -1,6 +1,6 @@
 const AdminSchema = require('../models/users/admin');
 const TagSchema = require('../models/tag');
-
+const AtronsSchema = require('../models/atrons');
 const ctrl = {};
 
 ctrl.populateTags = function (callback) {
@@ -10,6 +10,21 @@ ctrl.populateTags = function (callback) {
         if (err) {
             if (err.code == 11000) {
                 logger.info('tags already created');
+                return callback(null, null);
+            }
+            return callback(err, null);
+        }
+        return callback(null, null);
+    });
+}
+
+ctrl.createAtronsAccount = function (callback) {
+    const atronsInfo = require('./atrons.json');
+
+    AtronsSchema.create(atronsInfo, (err, created) => {
+        if (err) {
+            if (err.code == 11000) {
+                logger.info('company info already populated');
                 return callback(null, null);
             }
             return callback(err, null);
