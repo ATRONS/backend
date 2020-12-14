@@ -64,8 +64,17 @@ middleware.isUnverifiedProvider = function (req, res, next) {
     return failure(res, 'unauthorized', 403);
 }
 
-middleware.isReader = function (req, res, next) {
-    if (req.user && req.user.role === 'reader') return next();
+middleware.isUnverifiedReader = function (req, res, next) {
+    if (req.user &&
+        req.user.role === 'reader' &&
+        !req.user.auth.verified) return next();
+    return failure(res, 'unauthorized', 403);
+}
+
+middleware.isVerifiedReader = function (req, res, next) {
+    if (req.user &&
+        req.user.role === 'reader' &&
+        req.user.auth.verified) return next();
     return failure(res, 'unauthorized', 403);
 }
 
