@@ -12,7 +12,6 @@ module.exports = {
     },
 
     REQUEST_STATUS: {
-        ALL: "ALL",
         PENDING: "PENDING",
         DENIED: "DENIED",
         ACCEPTED: "ACCEPTED"
