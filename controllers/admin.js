@@ -1,9 +1,11 @@
 const { failure, success, errorResponse, defaultHandler } = require("../helpers/response");
 const ProviderSchema = require('../models/users/provider');
+const ReaderSchema = require('../models/users/reader');
 const MaterialSchema = require('../models/material');
 const TransactionSchema = require('../models/transaction');
 const InvoiceSchema = require('../models/invoice');
 const RequestSchema = require('../models/request');
+const AtronsSchema = require('../models/atrons');
 const genericCtrl = require('./generic');
 const jwtCtrl = require('../auth/jwt');
 const hellocashCtrl = require('./payment/hellocash');
@@ -14,6 +16,7 @@ const luxon = require('luxon');
 const ObjectId = require("mongoose").Types.ObjectId;
 const settings = require("../defaults/settings");
 const emailer = require("../emailer/emailer");
+const material = require("../models/material");
 
 const ctrl = {};
 
@@ -33,6 +36,46 @@ ctrl.initialData = function (req, res, next) {
         user_info: function (callback) {
             req.user.auth = undefined;
             return callback(null, req.user);
+        }
+    }, defaultHandler(res));
+}
+
+ctrl.dashboardReport = function (req, res, next) {
+    asyncLib.parallel({
+        total_materials: function (callback) {
+            MaterialSchema.countMaterials(callback);
+        },
+        total_providers: function (callback) {
+            ProviderSchema.countProviders(callback);
+        },
+        total_readers: function (callback) {
+            ReaderSchema.countReaders(callback);
+        },
+        company_info: function (callback) {
+            AtronsSchema.getCompany(callback);
+        },
+        top_selling: function (callback) {
+            TransactionSchema.getLastWeekTopSelling((err, topSelling) => {
+                if (err) return callback(err);
+
+                const topSellingToObj = {};
+                topSelling.forEach(mat => {
+                    const id = mat._id.toHexString();
+                    topSellingToObj[id] = mat;
+                });
+                const matIds = topSelling.map((each) => each._id);
+
+                MaterialSchema.getMaterialsInIds(matIds, (err, materials) => {
+                    if (err) return callback(err);
+                    for (let material of materials) {
+                        const id = material._id.toHexString();
+                        topSellingToObj[id].title = material.title;
+                        topSellingToObj[id].subtitle = material.subtitle;
+                        topSellingToObj[id].price = material.price;
+                    }
+                    return callback(null, Object.values(topSellingToObj));
+                });
+            });
         }
     }, defaultHandler(res));
 }
