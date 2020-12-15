@@ -79,7 +79,7 @@ ctrl.webHook = function (req, res, next) {
     //     logger.warning('hmac incorrect, possible hack');
     //     return;
     // }
-
+    console.log(payload);
     const { tracenumber, status } = payload;
     if (status !== 'PROCESSED') {
         logger.info(`invoice with tracenumber ${tracenumber} sent status ${status}`);
