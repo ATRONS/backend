@@ -324,9 +324,6 @@ ctrl.initialData = function (req, res, next) {
         generes: function (callback) {
             TagSchema.getAllTags(callback);
         },
-        popular: function (callback) {
-            MaterialSchema.search({ type: 'BOOK' }, callback);
-        },
         newspapers: function (callback) {
             ProviderSchema.search({ provides: 'NEWSPAPER' }, callback);
         },
@@ -336,21 +333,26 @@ ctrl.initialData = function (req, res, next) {
     }, function (err, results) {
         if (err) return errorResponse(err, res);
 
-        const generes = results.generes;
-        const popular = {};
-
-        generes.forEach((genere, index) => {
-            if (index > 3) return;
-            popular[genere._id.toHexString()] = results.popular;
+        const tasks = {};
+        results.generes.forEach((genre) => {
+            const genreId = genre._id.toHexString();
+            console.log(genreId);
+            tasks[genreId] = function (callback) {
+                MaterialSchema.getPopularMaterials('BOOK', genreId, callback);
+            };
         });
 
-        const response = {
-            generes,
-            popular,
-            newspapers: results.newspapers,
-            magazines: results.magazines,
-        };
-        return success(res, response);
+        asyncLib.parallel(tasks, (err, popular) => {
+            if (err) return errorResponse(err, res);
+
+            const response = {
+                generes: results.generes,
+                popular: popular,
+                newspapers: results.newspapers,
+                magazines: results.magazines,
+            };
+            return success(res, response);
+        });
     });
 }
 
