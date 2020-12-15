@@ -174,7 +174,10 @@ ctrl.getSuggestions = function (req, res, next) { res.end('reader get suggestion
 ctrl.getOwnedMaterials = function (req, res, next) {
     TransactionSchema.getReaderOwnedMaterials(req.user._id, (err, transactions) => {
         if (err) return errorResponse(err, res);
-        const materials = transactions.map((each) => each.material);
+        const materials = transactions.map((each) => {
+            each.material.tags = [];
+            return each.material;
+        });
         return success(res, materials);
     });
 }
