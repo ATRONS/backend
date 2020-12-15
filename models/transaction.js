@@ -56,7 +56,7 @@ TransactionSchema.statics.createTransaction = function (transactionInfo, callbac
 
 TransactionSchema.statics.readerOwnsMaterial = function (readerId, matId, callback) {
     this.model(COLLECTION)
-        .findOne({ reader: readerId, material: matId, type: invoice_types.PURCHASE })
+        .findOne({ reader: readerId, material: matId, kind: invoice_types.PURCHASE })
         .select('_id')
         .exec((err, transaction) => {
             if (err) return callback(err);
@@ -64,6 +64,14 @@ TransactionSchema.statics.readerOwnsMaterial = function (readerId, matId, callba
         });
 }
 
+TransactionSchema.statics.getReaderOwnedMaterials = function (readerId, callback) {
+    this.model(COLLECTION)
+        .find({ reader: readerId, kind: invoice_types.PURCHASE })
+        .populate('material', 'type title subtitle cover_img_url ISBN rating price edition created_at published_date')
+        .exec(callback);
+}
+
+// sends the last 7 days sells report for a provider.
 TransactionSchema.statics.getSellsReportByProvider = function (provider, lastXDays, callback) {
     if (!mongoose.isValidObjectId(provider)) return callback({ custom: 'Invalid Id', status: 400 });
 
@@ -228,6 +236,79 @@ TransactionSchema.statics.earningByMaterial = function (matId, callback) {
     ]).exec(callback);
 }
 
+// sends the last 7 days sells report for a material
+TransactionSchema.statics.getSellsReportByMaterial = function (material, lastXDays, callback) {
+    if (!mongoose.isValidObjectId(material)) return callback({ custom: 'Invalid Id', status: 400 });
+
+    const days = _.isNumber(lastXDays) ? Math.abs(Number(lastXDays)) : 6;
+    const today = luxon.DateTime.utc().endOf("day");
+    const xdaysAgo = today
+        .minus(luxon.Duration.fromObject({ days: days }))
+        .startOf("day");
+
+    this.model(COLLECTION)
+        .aggregate([
+            {
+                $match: {
+                    material: mongoose.Types.ObjectId(material),
+                    kind: settings.INVOICE_TYPES.PURCHASE,
+                    created_at: { $gte: xdaysAgo }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        day: { $dayOfMonth: "$created_at" },
+                        month: { $month: "$created_at" },
+                        year: { $year: "$created_at" }
+                    },
+                    total_amount: { $sum: "$amount" },
+                    total_sells: { $sum: 1 }
+                }
+            }
+        ])
+        .exec((err, result) => {
+            if (err) return callback(err);
+
+            const toObj = {};
+            result.forEach((e) => {
+                const key = `${e._id.day}:${e._id.month}:${e._id.year}`;
+                toObj[key] = e;
+            });
+
+            console.log(toObj);
+
+            let s = xdaysAgo;
+            let new_result = [];
+
+            for (let i = 0; i < 7; i++) {
+                let key = `${s.day}:${s.month}:${s.year}`;
+
+                if (toObj[key]) new_result.push(toObj[key]);
+                else {
+                    new_result.push({
+                        _id: {
+                            day: s.day,
+                            month: s.month,
+                            year: s.year
+                        },
+                        total_amount: 0,
+                        total_sells: 0
+                    });
+                }
+
+                if (s.day == today.day &&
+                    s.month == today.month &&
+                    s.year == today.year) {
+                    break;
+                }
+
+                s = s.plus(luxon.Duration.fromObject({ days: 1 }));
+            }
+            return callback(null, new_result);
+        });
+}
+
 TransactionSchema.statics.earningByMaterialInDuration = function (matId, filters, callback) {
     if (!mongoose.isValidObjectId(matId)) return callback({ custom: 'Invalid Id', status: 400 });
 
@@ -364,10 +445,10 @@ TransactionSchema.statics.getProviderTransactions = function (provider, filters,
 
     const query = {
         provider: provider,
-        created_at: {
-            $gte: start,
-            $lte: end,
-        }
+        // created_at: {
+        //     $gte: start,
+        //     $lte: end,
+        // }
     }
 
     this.model(COLLECTION)
