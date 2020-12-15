@@ -140,7 +140,7 @@ RequestSchema.statics.countRequestsByCategory = function (callback) {
 
         const toObj = {};
         for (let key of Object.keys(request_status_obj)) {
-            results[key] = 0;
+            toObj[key] = 0;
         }
 
         for (let result of results) {
