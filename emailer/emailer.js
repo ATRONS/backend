@@ -4,16 +4,21 @@ const logger = global.logger;
 class EmailSender {
     constructor() {
         this.transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: process.env.EMAIL_HOST,
+            port: process.env.EMAIL_PORT,
+            secure: true,
+            // service: 'gmail',
             pool: true,
             auth: {
-                type: 'OAuth2',
                 user: process.env.EMAIL_ADDRESS,
-                clientId: process.env.EMAIL_CLIENT_ID,
-                clientSecret: process.env.EMAIL_CLIENT_SECRET,
-                refreshToken: process.env.EMAIL_REFRESH_TOKEN,
-                accessToken: process.env.EMAIL_ACCESS_TOKEN,
-                expires: 1484314697598
+                pass: process.env.EMAIL_PASSWORD,
+                // type: 'OAuth2',
+                // user: process.env.EMAIL_ADDRESS,
+                // clientId: process.env.EMAIL_CLIENT_ID,
+                // clientSecret: process.env.EMAIL_CLIENT_SECRET,
+                // refreshToken: process.env.EMAIL_REFRESH_TOKEN,
+                // accessToken: process.env.EMAIL_ACCESS_TOKEN,
+                // expires: 1484314697598
             }
         });
     }
@@ -53,13 +58,13 @@ class EmailSender {
             </div>
             `;
 
-            await this.transporter.sendMail({
-                from: process.env.EMAIL,
+            const result = await this.transporter.sendMail({
+                from: process.env.EMAIL_ADDRESS,
                 to: recepient,
                 subject: `Verify your email`,
                 html: mailHTML,
             });
-
+            console.log(result);
             logger.info('verification email sent');
             console.log(mailHTML);
             return true;
