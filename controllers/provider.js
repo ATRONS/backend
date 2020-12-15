@@ -113,8 +113,8 @@ ctrl.getEarningsByMaterials = function (req, res, next) {
                     _id: material._id,
                     title: material.title,
                     subtitle: material.subtitle,
-                    total_earning: earning ? earning.amount : 0,
-                    count: earning ? earning.count : 0,
+                    total_earning: earning ? earning.total_earnings : 0,
+                    count: earning ? earning.total_sells : 0,
                 };
             });
             return success(res, matResult);
