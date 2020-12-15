@@ -224,8 +224,7 @@ ctrl.completeRequest = function (req, res, next) {
                     const transferInfo = {
                         amount: amount,
                         description: 'Payment to ' + provider.legal_name,
-                        // to: providerPhone,
-                        to: '+251933720637',
+                        to: providerPhone,
                         tracenumber: uuid.v4(),
                     };
 
