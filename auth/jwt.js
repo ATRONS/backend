@@ -8,7 +8,11 @@ ctrl.getRandomBytes = function (length = 48) {
 }
 
 ctrl.getRandom6DigitsString = function () {
-    return Number(Math.floor(Math.random() * 1000000)).toString();
+    let string = '';
+    for (let i = 0; i < 6; i++) {
+        string += Number(Math.floor(Math.random() * 10000) % 10).toString();
+    }
+    return string;
 }
 
 ctrl.createToken = function (payload, secret, callback) {
