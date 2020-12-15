@@ -15,6 +15,10 @@ const WishListSchema = mongoose.Schema({
     }
 });
 
+WishListSchema.statics.createWishlist = function (wishlistInfo, callback) {
+    this.model(COLLECTION).create(wishlistInfo, callback);
+}
+
 WishListSchema.statics.getWishListByUser = function (userId, callback) {
     if (!_.isString(userId) || !mongoose.isValidObjectId(userId)) {
         return callback({ custom: 'Invalid ObjectId', status: 400 });
