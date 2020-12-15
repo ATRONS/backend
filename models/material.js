@@ -177,8 +177,6 @@ MaterialSchema.statics.search = function (filters, callback) {
     let size = isNaN(Number(filters.size)) ?
         LIMIT : Math.abs(Number(filters.size));
 
-    if (size > LIMIT) size = LIMIT;
-
     const query = {};
 
     if (filters.search) {
@@ -225,8 +223,6 @@ MaterialSchema.statics.minifiedSearch = function (filters, callback) {
 
     let size = isNaN(Number(filters.size)) ?
         LIMIT : Math.abs(Number(filters.size));
-
-    if (size > LIMIT) size = LIMIT;
 
     const query = {};
 

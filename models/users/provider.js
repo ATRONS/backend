@@ -153,8 +153,6 @@ ProviderSchema.statics.search = function (filters, callback, onlyActive = true) 
     let size = isNaN(Number(filters.size)) ?
         LIMIT : Math.abs(Number(filters.size));
 
-    if (size > LIMIT) size = LIMIT;
-
     const query = {};
 
     if (filters.legal_name) {
