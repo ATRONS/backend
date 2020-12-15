@@ -240,7 +240,7 @@ TransactionSchema.statics.earningByMaterial = function (matId, callback) {
 TransactionSchema.statics.getSellsReportByMaterial = function (material, lastXDays, callback) {
     if (!mongoose.isValidObjectId(material)) return callback({ custom: 'Invalid Id', status: 400 });
 
-    const days = _.isNumber(lastXDays) ? Math.abs(Number(lastXDays)) : 6;
+    const days = _.isNumber(Number(lastXDays)) ? Math.abs(Number(lastXDays)) - 1 : 6;
     const today = luxon.DateTime.utc().endOf("day");
     const xdaysAgo = today
         .minus(luxon.Duration.fromObject({ days: days }))
@@ -281,7 +281,7 @@ TransactionSchema.statics.getSellsReportByMaterial = function (material, lastXDa
             let s = xdaysAgo;
             let new_result = [];
 
-            for (let i = 0; i < 7; i++) {
+            for (let i = 0; i < days; i++) {
                 let key = `${s.day}:${s.month}:${s.year}`;
 
                 if (toObj[key]) new_result.push(toObj[key]);
