@@ -82,7 +82,14 @@ ctrl.createRequest = function (req, res, next) {
 
 ctrl.getOwnRequests = function (req, res, next) {
     req.query.provider = req.user._id;
-    RequestSchema.getRequests(req.query, defaultHandler(res));
+    asyncLib.parallel({
+        counts: function (callback) {
+            RequestSchema.countRequestsByCategory(req.query, callback);
+        },
+        requests: function (callback) {
+            RequestSchema.getRequests(req.query, callback);
+        }
+    }, defaultHandler(res));
 }
 
 ctrl.getOwnMaterials = function (req, res, next) {
