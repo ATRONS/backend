@@ -142,7 +142,14 @@ ctrl.getMaterialSellsReport = function (req, res, next) {
 }
 
 ctrl.getTransactions = function (req, res, next) {
-    TransactionSchema.getProviderTransactions(req.user._id, req.query, defaultHandler(res));
+    asyncLib.parallel({
+        balance: function (callback) {
+            return callback(null, req.user.balance);
+        },
+        transactions: function (callback) {
+            TransactionSchema.getProviderTransactions(req.user._id, req.query, callback);
+        }
+    }, defaultHandler(res));
 }
 
 ctrl.getWithdrawalInfo = function (req, res, next) {
