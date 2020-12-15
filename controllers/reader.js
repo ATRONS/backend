@@ -154,7 +154,8 @@ ctrl.deleteAccount = function (req, res, next) { res.end('reader delete account'
 ctrl.getWishList = function (req, res, next) {
     WishlistSchema.getWishListByUser(req.user._id, (err, wishlist) => {
         if (err) return errorResponse(err, res);
-        return success(res, wishlist);
+        const materials = wishlist.map((each) => each.material);
+        return success(res, materials);
     });
 }
 

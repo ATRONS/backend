@@ -42,7 +42,7 @@ WishListSchema.statics.getWishListByUser = function (userId, callback) {
 
     this.model(COLLECTION)
         .find({ reader: userId })
-        .populate('material', { title: 1, subtitle: 1, _id: 1, cover_img_url: 1, provider: 1 })
+        .populate('material')
         .exec(callback);
 }
 
