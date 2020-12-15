@@ -230,37 +230,38 @@ ctrl.completeRequest = function (req, res, next) {
                     };
 
                     hellocashCtrl.transfer(transferInfo, (err, invoice) => {
-                        console.log(invoice);
                         if (err) return failure(res, 'Could not transfer');
-                        // const authorizeInfo = { tranferids: [invoice.id] };
-                        // hellocashCtrl.authorizeTransfer(authorizeInfo, (err, authorized) => {
-                        //     console.log(err);
-                        //     if (err) return failure(res, 'Transfer not authorized');
+                        const authorizeInfo = { transferids: [invoice.id] };
+                        hellocashCtrl.authorizeTransfer(authorizeInfo, (err, authorized) => {
+                            if (err) return failure(res, 'Transfer not authorized');
 
-                        // InvoiceSchema.createInvoice({
-                        //     kind: settings.INVOICE_TYPES.WITHDRAWAL,
-                        //     provider: material.provider._id,
+                            InvoiceSchema.createInvoice({
+                                kind: settings.INVOICE_TYPES.WITHDRAWAL,
+                                provider: material.provider._id,
 
-                        //     amount: invoice.amount,
-                        //     currency: invoice.currency,
-                        //     payer: invoice.from,
-                        //     receiver: invoice.to,
-                        //     date: invoice.date,
-                        //     expires: invoice.expires,
+                                amount: invoice.amount,
+                                currency: invoice.currency,
+                                payer: invoice.from,
+                                receiver: invoice.to,
+                                date: invoice.date,
+                                expires: invoice.expires,
 
-                        //     invoice_id: invoice.id,
-                        //     tracenumber: invoice.tracenumber,
-                        //     status: invoice.status,
+                                invoice_id: invoice.id,
+                                tracenumber: invoice.tracenumber,
+                                status: invoice.status,
 
-                        //     invoice_dump: invoice,
-                        // }, defaultHandler(res));
-
-                        // console.log(invoice);
-                        // console.log(authorized);
-
-                        // });
-                        request.status = settings.REQUEST_STATUS.IN_PROCESSING;
-                        request.save(defaultHandler(res));
+                                invoice_dump: invoice,
+                            }, (err, createdInvoice) => {
+                                if (err) return errorResponse(err, res);
+                                request.status = settings.REQUEST_STATUS.IN_PROCESSING;
+                                request.save((err, savedRequest) => {
+                                    if (err) return errorResponse(err, res);
+                                    const response = savedRequest.toObject();
+                                    response.code = authorized.code;
+                                    return success(res, response);
+                                });
+                            });
+                        });
                     });
                 });
             } else if (request.category === settings.REQUEST_CATEGORIES.MATERIAL_REMOVAL) {
