@@ -12,7 +12,7 @@ class EmailSender {
                 clientId: process.env.EMAIL_CLIENT_ID,
                 clientSecret: process.env.EMAIL_CLIENT_SECRET,
                 refreshToken: process.env.EMAIL_REFRESH_TOKEN,
-                // accessToken: process.env.EMAIL_ACCESS_TOKEN,
+                accessToken: process.env.EMAIL_ACCESS_TOKEN,
                 expires: 1484314697598
             }
         });
