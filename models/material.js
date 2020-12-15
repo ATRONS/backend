@@ -274,6 +274,27 @@ MaterialSchema.statics.getMaterialsInIds = function (matIds, callback) {
     this.model(COLLECTION).find({ _id: { $in: matIds } }).exec(callback);
 }
 
+MaterialSchema.statics.getPopularMaterials = function (type, tag, callback) {
+    this.model(COLLECTION).aggregate([
+        {
+            $match: {
+                type: type,
+                tags: {
+                    $elemMatch: { $eq: mongoose.Types.ObjectId(tag) },
+                },
+            }
+        },
+        {
+            $sort: {
+                'rating.value': -1,
+            }
+        },
+        {
+            $limit: 10,
+        }
+    ]).exec(callback);
+}
+
 MaterialSchema.statics.countMaterialsForProviders = function (ids, callback) {
     this.model(COLLECTION).aggregate([
         { $match: { provider: { $in: ids } } },
