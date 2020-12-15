@@ -3,7 +3,7 @@ const InvoiceSchema = require('../../models/invoice');
 const TransactionSchema = require('../../models/transaction');
 const ProviderSchema = require('../../models/users/provider');
 const AtronsSchema = require('../../models/atrons');
-
+const emailer = require('../../emailer/emailer');
 const crypto = require('crypto');
 const axios = require('axios');
 const asyncLib = require('async');
@@ -102,7 +102,7 @@ ctrl.webHook = function (req, res, next) {
 
         const tasks = [];
 
-        // this adds a PURCHASE or WITHDRAWAL transaction
+        // this adds a PURCHASE transaction
         if (updatedInvoice.kind === settings.INVOICE_TYPES.PURCHASE) {
             const taxShare = updatedInvoice.amount * settings.TAX_FEE_PERCENT;
             const atronsShare = updatedInvoice.amount * settings.ATRONS_SERVICE_FEE_PERCENT;
@@ -123,7 +123,7 @@ ctrl.webHook = function (req, res, next) {
                 const transactionInfo = {
                     kind: updatedInvoice.kind,
                     reader: updatedInvoice.reader,
-                    provider: updatedInvoice.provider,
+                    provider: updatedInvoice.provider._id,
                     material: updatedInvoice.material,
                     amount: updatedInvoice.amount,
                     tracenumber: updatedInvoice.tracenumber,
@@ -138,7 +138,7 @@ ctrl.webHook = function (req, res, next) {
                 const transactionInfo = {
                     kind: settings.INVOICE_TYPES.SERVICE_FEE,
                     amount: atronsShare,
-                    provider: updatedInvoice.provider,
+                    provider: updatedInvoice.provider._id,
                     tracenumber: updatedInvoice.tracenumber,
                     description: 'Service fee for ' + tracenumber,
                 };
@@ -150,22 +150,46 @@ ctrl.webHook = function (req, res, next) {
                 const transactionInfo = {
                     kind: settings.INVOICE_TYPES.TAX_FEE,
                     amount: taxShare,
-                    provider: updatedInvoice.provider,
+                    provider: updatedInvoice.provider._id,
                     tracenumber: updatedInvoice.tracenumber,
                     description: 'Tax fee for ' + tracenumber,
                 };
                 TransactionSchema.createTransaction(transactionInfo, callback);
             });
+        } else if (updatedInvoice.kind === settings.INVOICE_TYPES.WITHDRAWAL) {
+            // record the withdrawal transaction
+            tasks.push(function (callback) {
+                const transactionInfo = {
+                    kind: settings.INVOICE_TYPES.WITHDRAWAL,
+                    amount: updatedInvoice.amount,
+                    provider: updatedInvoice.provider._id,
+                    tracenumber: updatedInvoice.tracenumber,
+                    description: 'Withdrawal',
+                };
+                TransactionSchema.createTransaction(transactionInfo, callback);
+            });
+
+            // deduct from our provider's balance.
+            tasks.push(function (callback) {
+                ProviderSchema.deductBalance(updatedInvoice.provider, updatedInvoice.amount, callback);
+            });
         }
 
+        if (!tasks.length) return;
         asyncLib.parallel(tasks, (err, results) => {
             if (err) {
                 logger.error(err);
                 logger.error('Transaction processing failed, tracenumber: ' + tracenumber);
                 return;
             }
-
             logger.debug('transaction processing completed, tracenumber: ' + tracenumber);
+            if (updatedInvoice.kind === settings.INVOICE_TYPES.WITHDRAWAL) {
+                const recepientInfo = {
+                    email: updatedInvoice.provider.email,
+                    legal_name: updatedInvoice.provider.legal_name,
+                }
+                emailer.sendWithdrawalEmail(recepientInfo, updatedInvoice.amount);
+            }
         });
     });
 }
