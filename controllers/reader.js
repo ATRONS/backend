@@ -201,6 +201,9 @@ ctrl.getMaterial = function (req, res, next) {
         },
         owned: function (callback) {
             TransactionSchema.readerOwnsMaterial(req.user._id, req.params.id, callback);
+        },
+        favorite: function (callback) {
+            WishlistSchema.getWishListByUserAndMaterial(req.user._id, req.params.id, callback);
         }
     }, function (err, results) {
         if (err) return errorResponse(err, res);
@@ -215,6 +218,7 @@ ctrl.getMaterial = function (req, res, next) {
             response.material_ratings = results.ratings;
             response.readers_last_rating = results.readerRating || { value: 0, description: '' };
             response.owned = results.owned;
+            response.favorite = results.favorite !== null;
             success(res, response);
         });
     });
