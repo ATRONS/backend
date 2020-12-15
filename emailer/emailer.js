@@ -96,6 +96,32 @@ class EmailSender {
         }
         return false;
     }
+
+    async sendWithdrawalEmail(recepientInfo, amount) {
+        try {
+            const mailHTML = `
+            <div>
+                <h1>Atrons, Withdrawal notice</h1>
+                <h2>Dear ${recepientInfo.legal_name}, Your request for withdrawal of ETB ${amount}
+                has been completed. Contact provider support for more.</h2>
+            </div>
+            `;
+            await this.transporter.sendMail({
+                from: process.env.EMAIL,
+                to: recepientInfo.email,
+                subject: `Atrons, material removal notice`,
+                html: mailHTML,
+            });
+
+            logger.info('verification email sent');
+            console.log(mailHTML);
+            return true;
+        } catch (err) {
+            console.log(err);
+            logger.error(err);
+        }
+        return false;
+    }
 }
 
 const emailer = new EmailSender();
