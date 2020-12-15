@@ -173,6 +173,9 @@ ctrl.getMaterial = function (req, res, next) {
         ratings: function (callback) {
             RatingSchema.getRatingsByMaterial(req.params.id, req.query, callback);
         },
+        owned: function (callback) {
+            TransactionSchema.readerOwnsMaterial(req.user._id, req.params.id, callback);
+        }
     }, function (err, results) {
         if (err) return errorResponse(err, res);
 
@@ -186,6 +189,7 @@ ctrl.getMaterial = function (req, res, next) {
                 .filter((each) => each._id.toHexString() !== req.params.id);;
             response.material_ratings = results.ratings;
             response.readers_last_rating = results.readerRating || { value: 0, description: '' };
+            response.owned = results.owned;
             success(res, response);
         });
     });
@@ -196,50 +200,58 @@ ctrl.purchaseMaterial = function (req, res, next) {
         return failure(res, 'Invaild phone number');
     }
 
-    MaterialSchema.getMaterial(req.params.id, (err, material) => {
+    TransactionSchema.readerOwnsMaterial(req.user._id, req.params.id, (err, owned) => {
         if (err) return errorResponse(err, res);
-        if (!material) return failure(res, 'Material not found', 404);
+        if (owned) return failure(res, { message: 'You already own this material' });
 
-        let expiresOn = luxon.DateTime.utc();
-        expiresOn = expiresOn.plus(luxon.Duration.fromObject({ days: 1 }));
-        expiresOn = expiresOn.toISO();
+        MaterialSchema.getMaterial(req.params.id, (err, material) => {
+            if (err) return errorResponse(err, res);
+            if (!material) return failure(res, 'Material not found', 404);
 
-        const invoiceInfo = {
-            amount: material.price.selling,
-            description: `Invoice from Atrons for ${material.title}`,
-            currency: "ETB",
-            expires: expiresOn,
-            tracenumber: uuid.v4(),
-            notifyfrom: true,
-            notifyto: true,
-            from: req.body.phone.trim(),
-        };
+            let expiresOn = luxon.DateTime.utc();
+            expiresOn = expiresOn.plus(luxon.Duration.fromObject({ days: 1 }));
+            expiresOn = expiresOn.toISO();
 
-        helloCashCtrl.createInvoice(invoiceInfo, (err, invoice) => {
-            if (err) {
-                logger.error(err);
-                return failure(res, 'Could not create Invoice', 500);
-            }
-
-            InvoiceSchema.createInvoice({
-                kind: settings.INVOICE_TYPES.PURCHASE,
-                reader: req.user._id,
-                provider: material.provider._id,
-                material: material._id,
-
+            const invoiceInfo = {
                 amount: material.price.selling,
-                currency: invoice.currency,
-                payer: invoice.from,
-                receiver: invoice.to,
-                date: invoice.date,
-                expires: invoice.expires,
+                description: `Invoice from Atrons for ${material.title}`,
+                currency: "ETB",
+                expires: expiresOn,
+                tracenumber: uuid.v4(),
+                notifyfrom: true,
+                notifyto: true,
+                from: req.body.phone.trim(),
+            };
 
-                invoice_id: invoice.id,
-                tracenumber: invoice.tracenumber,
-                status: invoice.status,
+            helloCashCtrl.createInvoice(invoiceInfo, (err, invoice) => {
+                if (err) {
+                    logger.error(err);
+                    return failure(res, 'Could not create Invoice', 500);
+                }
 
-                invoice_dump: invoice,
-            }, defaultHandler(res));
+                InvoiceSchema.createInvoice({
+                    kind: settings.INVOICE_TYPES.PURCHASE,
+                    reader: req.user._id,
+                    provider: material.provider._id,
+                    material: material._id,
+
+                    amount: material.price.selling,
+                    currency: invoice.currency,
+                    payer: invoice.from,
+                    receiver: invoice.to,
+                    date: invoice.date,
+                    expires: invoice.expires,
+
+                    invoice_id: invoice.id,
+                    tracenumber: invoice.tracenumber,
+                    status: invoice.status,
+
+                    invoice_dump: invoice,
+                }, (err, savedInvoice) => {
+                    if (err) return errorResponse(err, res);
+                    return success(res, { code: invoice.code });
+                });
+            });
         });
     });
 }
