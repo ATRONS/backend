@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const luxon = require('luxon');
 const validator = require('../../helpers/validator');
+const convert = require('../../helpers/convert');
 const asyncLib = require('async');
 const _ = require('lodash');
 
@@ -73,13 +74,16 @@ const ProviderSchema = mongoose.Schema({
 ProviderSchema.index({ created_at: 1 });
 
 ProviderSchema.path('email').validate(validator.isEmail, 'Email invalid');
+ProviderSchema.path('phone').validate(validator.isPhoneNumber, 'Phone invalid');
 
 ProviderSchema.pre('save', function (next) {
     const user = this;
 
     if (user.is_company) user.author_info = undefined;
     else user.company_info = undefined;
-
+    if (user.isModified('phone')) {
+        user.phone = convert.fromLocalToInternational(user.phone);
+    }
     if (!user.isModified('auth.password')) return next();
 
     bcrypt.genSalt(SALT_FACTOR, function (err, salt) {
