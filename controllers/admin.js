@@ -37,15 +37,21 @@ ctrl.initialData = function (req, res, next) {
 }
 
 ctrl.createProvider = function (req, res, next) {
+    const password = jwtCtrl.getRandomBytes(10);
     req.body.auth = {
-        // password : jwtCtrl.getRandomBytes(10),
-        password: 'password',
+        password: password,
     }
 
-    ProviderSchema.createProvider(req.body, (err, result) => {
+    ProviderSchema.createProvider(req.body, (err, provider) => {
         if (err) return errorResponse(err, res);
         result.auth = undefined;
-        return success(res, result);
+        const recepientInfo = {
+            email: provider.email,
+            legal_name: provider.legal_name,
+        };
+        const url = 'http://ec2-3-126-51-124.eu-central-1.compute.amazonaws.com/api/v1'
+        emailer.sendProviderDefaultPassword(recepientInfo, password, url);
+        return success(res, provider);
     });
 }
 
