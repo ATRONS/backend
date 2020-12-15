@@ -196,7 +196,7 @@ ctrl.getAllTags = genericCtrl.getAllTags;
 ctrl.getRequests = function (req, res, next) {
     asyncLib.parallel({
         counts: function (callback) {
-            RequestSchema.countRequestsByCategory(callback);
+            RequestSchema.countRequestsByCategory({}, callback);
         },
         requests: function (callback) {
             RequestSchema.getRequests(req.query, callback);
