@@ -195,6 +195,13 @@ MaterialSchema.statics.search = function (filters, callback) {
             query.provider = filters.provider;
         }
     }
+
+    if (filters.tag) {
+        if (mongoose.isValidObjectId(filters.tag)) {
+            query.tags = filters.tag;
+        }
+    }
+
     query.deleted = false;
     const that = this;
     asyncLib.parallel({
