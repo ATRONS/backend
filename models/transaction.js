@@ -309,6 +309,37 @@ TransactionSchema.statics.getSellsReportByMaterial = function (material, lastXDa
         });
 }
 
+TransactionSchema.statics.getLastWeekTopSelling = function (callback) {
+    const today = luxon.DateTime.utc().endOf("day");
+    const xdaysAgo = today
+        .minus(luxon.Duration.fromObject({ days: 30 }))
+        .startOf("day");
+
+    this.model(COLLECTION).aggregate([
+        {
+            $match: {
+                created_at: { $gte: xdaysAgo },
+                kind: invoice_types.PURCHASE,
+            }
+        },
+        {
+            $group: {
+                _id: "$material",
+                total_earnings: { $sum: "$amount" },
+                total_sells: { $sum: 1 },
+            }
+        },
+        {
+            $sort: {
+                total_earnings: -1
+            }
+        },
+        {
+            $limit: 10
+        }
+    ]).exec(callback);
+}
+
 TransactionSchema.statics.earningByMaterialInDuration = function (matId, filters, callback) {
     if (!mongoose.isValidObjectId(matId)) return callback({ custom: 'Invalid Id', status: 400 });
 
