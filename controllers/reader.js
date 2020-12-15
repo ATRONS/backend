@@ -5,6 +5,8 @@ const TagSchema = require('../models/tag');
 const RatingSchema = require('../models/rating');
 const InvoiceSchema = require('../models/invoice');
 const TransactionSchema = require('../models/transaction');
+const WishlistSchema = require('../models/wishlist');
+
 const uuid = require('uuid');
 const _ = require('lodash');
 
@@ -148,15 +150,34 @@ ctrl.updateProfile = function (req, res, next) { res.end('reader update profile'
 
 ctrl.deleteAccount = function (req, res, next) { res.end('reader delete account'); }
 
-ctrl.getWishList = function (req, res, next) { res.end('reader get wishlist'); }
+ctrl.getWishList = function (req, res, next) {
+    WishlistSchema.getWishListByUser(req.user._id, (err, wishlist) => {
+        if (err) return errorResponse(err, res);
+        return success(res, wishlist);
+    });
+}
 
-ctrl.addToWishlist = function (req, res, next) { res.end('reader add to wishlist'); }
+ctrl.addToWishlist = function (req, res, next) {
+    const wishlistInfo = {
+        reader: req.user._id,
+        material: req.body.material,
+    };
+    WishlistSchema.createWishlist(wishlistInfo, defaultHandler(res));
+}
 
-ctrl.removeFromWishlist = function (req, res, next) { res.end('reader remove from wishlist'); }
+ctrl.removeFromWishlist = function (req, res, next) {
+    WishlistSchema.removeFromWishlist(req.user._id, req.params.id, defaultHandler(res));
+}
 
 ctrl.getSuggestions = function (req, res, next) { res.end('reader get suggestions'); }
 
-ctrl.getOwnedMaterials = function (req, res, next) { res.end('reader get owned materials'); }
+ctrl.getOwnedMaterials = function (req, res, next) {
+    TransactionSchema.getReaderOwnedMaterials(req.user._id, (err, transactions) => {
+        if (err) return errorResponse(err, res);
+        const materials = transactions.map((each) => each.material);
+        return success(res, materials);
+    });
+}
 
 ctrl.getFeaturedMaterials = function (req, res, next) { res.end('reader get featured materials'); }
 
@@ -182,7 +203,6 @@ ctrl.getMaterial = function (req, res, next) {
         const query = { provider: results.material.provider._id };
         MaterialSchema.search(query, (err, moreFromProvider) => {
             if (err) return errorResponse(err, res);
-
             const response = results.material;
             response.more_from_provider = moreFromProvider;
             response.more_from_provider.materials = moreFromProvider.materials
