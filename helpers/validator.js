@@ -11,8 +11,9 @@ validator.isEmail = function (value) {
 
 validator.isPhoneNumber = function (phone) {
     if (!_.isString(phone)) return false;
-    const re = /^\+2519[0-9]{8}$/;
-    return re.test(phone.trim());
+    const international = /^\+2519[0-9]{8}$/;
+    const local = /^09[0-9]{8}/;
+    return international.test(phone.trim()) || local.test(phone.trim());
 }
 
 module.exports = validator;
