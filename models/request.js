@@ -127,15 +127,24 @@ RequestSchema.statics.getPendingRequestsCount = function (callback) {
     this.model(COLLECTION).countDocuments({ status: request_status_obj.PENDING }).exec(callback);
 }
 
-RequestSchema.statics.countRequestsByCategory = function (callback) {
-    this.model(COLLECTION).aggregate([
-        {
-            $group: {
-                _id: "$status",
-                total: { $sum: 1 }
+RequestSchema.statics.countRequestsByCategory = function (filters, callback) {
+    const aggregations = [];
+    if (mongoose.isValidObjectId(filters.provider)) {
+        aggregations.push({
+            $match: {
+                provider: mongoose.Types.ObjectId(filters.provider),
             }
+        });
+    }
+
+    aggregations.push({
+        $group: {
+            _id: "$status",
+            total: { $sum: 1 },
         }
-    ]).exec((err, results) => {
+    });
+
+    this.model(COLLECTION).aggregate(aggregations).exec((err, results) => {
         if (err) return callback(err);
 
         const toObj = {};
