@@ -15,19 +15,34 @@ const WishListSchema = mongoose.Schema({
     }
 });
 
+WishListSchema.index({ reader: 1, material: 1 }, { unique: true });
+
 WishListSchema.statics.createWishlist = function (wishlistInfo, callback) {
     this.model(COLLECTION).create(wishlistInfo, callback);
 }
 
+WishListSchema.statics.removeFromWishlist = function (userId, wishlistId, callback) {
+    if (!mongoose.isValidObjectId(userId) || !mongoose.isValidObjectId(wishlistId)) {
+        return callback({ custom: 'Invalid ObjectIds', status: 400 });
+    }
+    this.model(COLLECTION).remove({ reader: userId, _id: wishlistId }).exec(callback);
+}
+
+WishListSchema.getWishListByUserAndMaterial = function (userId, matId, callback) {
+    if (!mongoose.isValidObjectId(userId) || !mongoose.isValidObjectId(matId)) {
+        return callback({ custom: 'Invalid ObjectIds', status: 400 });
+    }
+    this.model(COLLECTION).findOne({ reader: userId, material: matId }).exec(callback);
+}
+
 WishListSchema.statics.getWishListByUser = function (userId, callback) {
-    if (!_.isString(userId) || !mongoose.isValidObjectId(userId)) {
+    if (!mongoose.isValidObjectId(userId)) {
         return callback({ custom: 'Invalid ObjectId', status: 400 });
     }
 
     this.model(COLLECTION)
         .find({ reader: userId })
         .populate('material', { title: 1, subtitle: 1, _id: 1, cover_img_url: 1, provider: 1 })
-        .populate('material.provider', { display_name: 1, _id: 1 })
         .exec(callback);
 }
 
