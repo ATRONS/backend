@@ -224,7 +224,7 @@ ctrl.searchMaterials = function (req, res, next) {
 }
 
 ctrl.getLast7DaysMaterialSells = function (req, res, next) {
-    TransactionSchema.getSellsReportByMaterial(req.params.id, req.query.laxtXDays, defaultHandler(res));
+    TransactionSchema.getSellsReportByMaterial(req.params.id, req.query.lastXDays, defaultHandler(res));
 }
 
 ctrl.getMaterialRatings = function (req, res, next) {
