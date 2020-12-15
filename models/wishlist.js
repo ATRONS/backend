@@ -28,7 +28,7 @@ WishListSchema.statics.removeFromWishlist = function (userId, wishlistId, callba
     this.model(COLLECTION).remove({ reader: userId, _id: wishlistId }).exec(callback);
 }
 
-WishListSchema.getWishListByUserAndMaterial = function (userId, matId, callback) {
+WishListSchema.statics.getWishListByUserAndMaterial = function (userId, matId, callback) {
     if (!mongoose.isValidObjectId(userId) || !mongoose.isValidObjectId(matId)) {
         return callback({ custom: 'Invalid ObjectIds', status: 400 });
     }
