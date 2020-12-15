@@ -270,11 +270,19 @@ MaterialSchema.statics.minifiedSearch = function (filters, callback) {
     }, callback);
 }
 
+MaterialSchema.statics.getMaterialsInIds = function (matIds, callback) {
+    this.model(COLLECTION).find({ _id: { $in: matIds } }).exec(callback);
+}
+
 MaterialSchema.statics.countMaterialsForProviders = function (ids, callback) {
     this.model(COLLECTION).aggregate([
         { $match: { provider: { $in: ids } } },
         { $group: { _id: "$provider", count: { $sum: 1 } } }
     ]).exec(callback);
+}
+
+MaterialSchema.statics.countMaterials = function (callback) {
+    this.model(COLLECTION).countDocuments({}).exec(callback);
 }
 
 MaterialSchema.statics.softDelete = function (oId, callback) {
