@@ -67,7 +67,7 @@ TransactionSchema.statics.readerOwnsMaterial = function (readerId, matId, callba
 TransactionSchema.statics.getReaderOwnedMaterials = function (readerId, callback) {
     this.model(COLLECTION)
         .find({ reader: readerId, kind: invoice_types.PURCHASE })
-        .populate('material', 'type title subtitle cover_img_url ISBN rating price edition created_at published_date')
+        .populate('material')
         .exec(callback);
 }
 
