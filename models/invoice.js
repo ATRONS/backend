@@ -73,6 +73,7 @@ InvoiceSchema.statics.updateByTracenumber = function (tracenumber, updates, call
 
     this.model(COLLECTION)
         .findOneAndUpdate({ tracenumber: tracenumber }, { $set: updateObj }, { new: true })
+        .populate('provider', 'email legal_name _id')
         .populate('material', 'title subtitle _id')
         .exec(callback);
 }
