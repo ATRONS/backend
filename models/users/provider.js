@@ -229,4 +229,8 @@ ProviderSchema.statics.deductBalance = function (oId, amount, callback) {
     this.model(COLLECTION).updateOne({ _id: oId }, { $inc: { balance: -Number(amount) } }).exec(callback);
 }
 
+ProviderSchema.statics.countProviders = function (callback) {
+    this.model(COLLECTION).countDocuments({}).exec(callback);
+}
+
 module.exports = mongoose.model(COLLECTION, ProviderSchema);
