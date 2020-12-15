@@ -194,7 +194,14 @@ ctrl.getAllTags = genericCtrl.getAllTags;
 // ---------------------------------------------------------
 
 ctrl.getRequests = function (req, res, next) {
-    RequestSchema.getRequests(req.query, defaultHandler(res));
+    asyncLib.parallel({
+        counts: function (callback) {
+            RequestSchema.countRequestsByCategory(callback);
+        },
+        requests: function (callback) {
+            RequestSchema.getRequests(req.query, callback);
+        }
+    }, defaultHandler(res));
 }
 
 ctrl.completeRequest = function (req, res, next) {
