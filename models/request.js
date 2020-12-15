@@ -79,9 +79,6 @@ RequestSchema.statics.getRequests = function (filters, callback) {
     let size = isNaN(Number(filters.size)) ?
         LIMIT : Math.abs(Number(filters.size));
 
-    if (size > LIMIT) size = LIMIT;
-
-
     const query = {};
 
     if (filters.provider && mongoose.isValidObjectId(filters.provider)) {
@@ -128,6 +125,29 @@ RequestSchema.statics.getRequests = function (filters, callback) {
 
 RequestSchema.statics.getPendingRequestsCount = function (callback) {
     this.model(COLLECTION).countDocuments({ status: request_status_obj.PENDING }).exec(callback);
+}
+
+RequestSchema.statics.countRequestsByCategory = function (callback) {
+    this.model(COLLECTION).aggregate([
+        {
+            $group: {
+                _id: "$status",
+                total: { $sum: 1 }
+            }
+        }
+    ]).exec((err, results) => {
+        if (err) return callback(err);
+
+        const toObj = {};
+        for (let key of Object.keys(request_status_obj)) {
+            results[key] = 0;
+        }
+
+        for (let result of results) {
+            toObj[result._id] = result.total;
+        }
+        return callback(null, toObj);
+    });
 }
 
 module.exports = mongoose.model(COLLECTION, RequestSchema);
