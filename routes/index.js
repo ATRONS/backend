@@ -91,6 +91,12 @@ router.get(
     readerCtrl.getAllTags);
 
 router.get(
+    readerBase + '/materials/owned',
+    authMiddleware.authenticateUser,
+    authMiddleware.isVerifiedReader,
+    readerCtrl.getOwnedMaterials);
+
+router.get(
     readerBase + '/materials/:id',
     authMiddleware.authenticateUser,
     authMiddleware.isVerifiedReader,
@@ -113,6 +119,24 @@ router.put(
     authMiddleware.authenticateUser,
     authMiddleware.isVerifiedReader,
     readerCtrl.rateMaterial);
+
+router.post(
+    readerBase + '/wishlist',
+    authMiddleware.authenticateUser,
+    authMiddleware.isVerifiedReader,
+    readerCtrl.addToWishlist);
+
+router.get(
+    readerBase + '/wishlist',
+    authMiddleware.authenticateUser,
+    authMiddleware.isVerifiedReader,
+    readerCtrl.getWishList);
+
+router.delete(
+    readerBase + '/wishlist/:id',
+    authMiddleware.authenticateUser,
+    authMiddleware.isVerifiedReader,
+    readerCtrl.removeFromWishlist);
 
 router.get(
     readerBase + '/providers',
@@ -192,6 +216,12 @@ router.get(
     authMiddleware.authenticateUser,
     authMiddleware.isVerifiedProvider,
     providerCtrl.getMaterialSellsReport);
+
+router.get(
+    providerBase + '/materials/:id/report/lastXDays',
+    authMiddleware.authenticateUser,
+    authMiddleware.isVerifiedProvider,
+    providerCtrl.getLast7DaysMaterialSells);
 
 router.get(
     providerBase + '/earnings',
@@ -315,6 +345,12 @@ router.get(
     authMiddleware.authenticateUser,
     authMiddleware.isAdmin,
     adminCtrl.getMaterialRatings);
+
+router.get(
+    adminBase + '/materials/:id/report/lastXDays',
+    authMiddleware.authenticateUser,
+    authMiddleware.isAdmin,
+    adminCtrl.getLast7DaysMaterialSells);
 
 router.post(
     adminBase + '/upload/material',
