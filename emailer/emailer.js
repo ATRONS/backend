@@ -18,6 +18,32 @@ class EmailSender {
         });
     }
 
+    async sendProviderDefaultPassword(recepientInfo, password, url) {
+        try {
+            const mailHTML = `
+            <div>
+                <h1>Dear ${recepientInfo.legal_name}, ${password} is your default password</h1>
+                <a href="${url}">Go to site</a>
+            </div>
+            `;
+
+            await this.transporter.sendMail({
+                from: process.env.EMAIL,
+                to: recepientInfo.email,
+                subject: `Verify your email`,
+                html: mailHTML,
+            });
+
+            logger.info('verification email sent');
+            console.log(mailHTML);
+            return true;
+        } catch (err) {
+            console.log(err);
+            logger.error(err);
+        }
+        return false;
+    }
+
     async sendVerifyEmail(recepient, code) {
         try {
             const mailHTML = `
