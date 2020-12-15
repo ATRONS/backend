@@ -73,5 +73,9 @@ ReaderSchema.statics.getUserByToken = function (token, callback) {
     this.model(COLLECTION).findOne({ 'auth.tokens': token }, callback);
 }
 
+ReaderSchema.statics.countReaders = function (callback) {
+    this.model(COLLECTION).countDocuments({}).exec(callback);
+}
+
 
 module.exports = mongoose.model(COLLECTION, ReaderSchema);
