@@ -10,6 +10,7 @@ const hellocashCtrl = require('./payment/hellocash');
 const asyncLib = require('async');
 const uuid = require('uuid');
 const _ = require('lodash');
+const luxon = require('luxon');
 const ObjectId = require("mongoose").Types.ObjectId;
 const settings = require("../defaults/settings");
 const emailer = require("../emailer/emailer");
@@ -44,7 +45,7 @@ ctrl.createProvider = function (req, res, next) {
 
     ProviderSchema.createProvider(req.body, (err, provider) => {
         if (err) return errorResponse(err, res);
-        result.auth = undefined;
+        provider.auth = undefined;
         const recepientInfo = {
             email: provider.email,
             legal_name: provider.legal_name,
@@ -101,7 +102,7 @@ ctrl.getProvider = function (req, res, next) {
         response.sells_report = results.sellsReport;
 
         response.report = {
-            available_balance: 100,
+            available_balance: results.provider.balance,
             total_sells: results.totalSells.total_sells,
             total_earnings: results.totalSells.total_earnings,
             total_materials: results.totalMaterialsCount.length ?
@@ -127,7 +128,7 @@ ctrl.searchProviders = function (req, res, next) {
                 if (count) provider.total_materials = count.count;
                 else provider.total_materials = 0;
                 return provider;
-            })
+            });
             return success(res, result);
         });
     });
@@ -181,6 +182,8 @@ ctrl.deleteMaterial = function (req, res, next) {
     });
 }
 
+ctrl.getLast7DaysMaterialSells = genericCtrl.getLast7DaysMaterialSells;
+
 ctrl.getMaterial = genericCtrl.getMaterial;
 
 ctrl.getMaterialRatings = genericCtrl.getMaterialRatings;
@@ -227,13 +230,16 @@ ctrl.completeRequest = function (req, res, next) {
                         return failure(res, 'Can not pay provider, balance insufficient for transfer');
                     }
 
+                    let expiresOn = luxon.DateTime.utc();
+                    expiresOn = expiresOn.plus(luxon.Duration.fromObject({ days: 1 }));
+                    expiresOn = expiresOn.toISO();
+
                     const transferInfo = {
                         amount: amount,
                         description: 'Payment to ' + provider.legal_name,
                         to: providerPhone,
                         tracenumber: uuid.v4(),
                     };
-
                     hellocashCtrl.transfer(transferInfo, (err, invoice) => {
                         if (err) return failure(res, 'Could not transfer');
                         const authorizeInfo = { transferids: [invoice.id] };
@@ -242,14 +248,14 @@ ctrl.completeRequest = function (req, res, next) {
 
                             InvoiceSchema.createInvoice({
                                 kind: settings.INVOICE_TYPES.WITHDRAWAL,
-                                provider: material.provider._id,
+                                provider: provider._id,
 
                                 amount: invoice.amount,
                                 currency: invoice.currency,
                                 payer: invoice.from,
                                 receiver: invoice.to,
                                 date: invoice.date,
-                                expires: invoice.expires,
+                                expires: expiresOn,
 
                                 invoice_id: invoice.id,
                                 tracenumber: invoice.tracenumber,
