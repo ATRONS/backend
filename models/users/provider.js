@@ -146,7 +146,7 @@ ProviderSchema.statics.getProvider = function (oId, callback) {
         .exec(callback);
 }
 
-ProviderSchema.statics.search = function (filters, callback, onlyActive = true) {
+ProviderSchema.statics.search = function (filters, callback) {
     const startRow = isNaN(Number(filters.startRow)) ?
         0 : Math.abs(Number(filters.startRow));
 
@@ -171,8 +171,11 @@ ProviderSchema.statics.search = function (filters, callback, onlyActive = true) 
         query.provides = _.toUpper(filters.provides).trim();
     }
 
+    if (_.isString(filters.active) && filters.active.trim()) {
+        query.active = true;
+    }
+
     query['auth.deleted'] = false;
-    if (onlyActive) query.active = onlyActive;
 
     const that = this;
     asyncLib.parallel({
