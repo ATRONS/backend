@@ -155,10 +155,11 @@ ProviderSchema.statics.search = function (filters, callback, onlyActive = true) 
 
     const query = {};
 
-    if (filters.legal_name) {
+    if (_.isString(filters.legal_name) && filters.legal_name.trim()) {
         query.legal_name = RegExp(`^${filters.legal_name}`, 'i');
     }
-    if (filters.type) {
+
+    if (_.isString(filters.type) && filters.type.trim()) {
         const type = _.toLower(_.trim(filters.type));
         if (type !== 'author' && type !== 'company') {
             return callback({ custom: 'unknown provider type', status: 400 });
@@ -166,7 +167,7 @@ ProviderSchema.statics.search = function (filters, callback, onlyActive = true) 
         query.is_company = type == 'company';
     }
 
-    if (_.isString(filters.provides)) {
+    if (_.isString(filters.provides) && filters.provides.trim()) {
         query.provides = _.toUpper(filters.provides).trim();
     }
 
