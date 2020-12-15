@@ -262,6 +262,12 @@ router.get(
     adminCtrl.initialData);
 
 router.get(
+    adminBase + '/dashboardReport',
+    authMiddleware.authenticateUser,
+    authMiddleware.isAdmin,
+    adminCtrl.dashboardReport);
+
+router.get(
     adminBase + '/users/providers',
     authMiddleware.authenticateUser,
     authMiddleware.isAdmin,
