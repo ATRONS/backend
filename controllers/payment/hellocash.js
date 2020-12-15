@@ -124,7 +124,7 @@ ctrl.webHook = function (req, res, next) {
                     kind: updatedInvoice.kind,
                     reader: updatedInvoice.reader,
                     provider: updatedInvoice.provider._id,
-                    material: updatedInvoice.material,
+                    material: updatedInvoice.material._id,
                     amount: updatedInvoice.amount,
                     tracenumber: updatedInvoice.tracenumber,
                     transaction_fee: updatedInvoice.transaction_fee,
