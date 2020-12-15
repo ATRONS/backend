@@ -124,6 +124,8 @@ ctrl.getEarningsByMaterials = function (req, res, next) {
 
 }
 
+ctrl.getLast7DaysMaterialSells = genericCtrl.getLast7DaysMaterialSells;
+
 ctrl.getEarningsByMaterialsBnDays = function (req, res, next) {
     TransactionSchema.earningsByProviderBnDays(req.user._id, req.query, defaultHandler(res));
 }
