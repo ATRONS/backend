@@ -281,7 +281,7 @@ TransactionSchema.statics.getSellsReportByMaterial = function (material, lastXDa
             let s = xdaysAgo;
             let new_result = [];
 
-            for (let i = 0; i < days; i++) {
+            for (let i = 0; i < days + 1; i++) {
                 let key = `${s.day}:${s.month}:${s.year}`;
 
                 if (toObj[key]) new_result.push(toObj[key]);
