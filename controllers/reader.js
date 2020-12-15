@@ -6,6 +6,7 @@ const RatingSchema = require('../models/rating');
 const InvoiceSchema = require('../models/invoice');
 const TransactionSchema = require('../models/transaction');
 const WishlistSchema = require('../models/wishlist');
+const convert = require('../helpers/convert');
 
 const uuid = require('uuid');
 const _ = require('lodash');
@@ -243,7 +244,7 @@ ctrl.purchaseMaterial = function (req, res, next) {
                 tracenumber: uuid.v4(),
                 notifyfrom: true,
                 notifyto: true,
-                from: req.body.phone.trim(),
+                from: convert.fromLocalToInternational(req.body.phone),
             };
 
             helloCashCtrl.createInvoice(invoiceInfo, (err, invoice) => {
