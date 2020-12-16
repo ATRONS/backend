@@ -129,13 +129,13 @@ RequestSchema.statics.getPendingRequestsCount = function (callback) {
 
 RequestSchema.statics.countRequestsByCategory = function (filters, callback) {
     const aggregations = [];
-    if (mongoose.isValidObjectId(filters.provider)) {
-        aggregations.push({
-            $match: {
-                provider: mongoose.Types.ObjectId(filters.provider),
-            }
-        });
-    }
+    // if (mongoose.isValidObjectId(filters.provider)) {
+    //     aggregations.push({
+    //         $match: {
+    //             provider: mongoose.Types.ObjectId(filters.provider),
+    //         }
+    //     });
+    // }
 
     aggregations.push({
         $group: {
