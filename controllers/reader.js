@@ -336,9 +336,12 @@ ctrl.initialData = function (req, res, next) {
         const tasks = {};
         results.generes.forEach((genre) => {
             const genreId = genre._id.toHexString();
-            console.log(genreId);
             tasks[genreId] = function (callback) {
-                MaterialSchema.getPopularMaterials('BOOK', genreId, callback);
+                const filters = {
+                    type: 'BOOK',
+                    tag: genreId,
+                }
+                MaterialSchema.search(filters, callback);
             };
         });
 
