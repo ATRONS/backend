@@ -344,8 +344,6 @@ ctrl.initialData = function (req, res, next) {
 
         asyncLib.parallel(tasks, (err, popular) => {
             if (err) return errorResponse(err, res);
-            console.log(popular);
-
             const response = {
                 generes: results.generes,
                 popular: popular,
