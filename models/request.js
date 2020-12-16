@@ -151,7 +151,7 @@ RequestSchema.statics.countRequestsByCategory = function (filters, callback) {
         for (let key of Object.keys(request_status_obj)) {
             toObj[key] = 0;
         }
-
+        console.log(results);
         for (let result of results) {
             toObj[result._id] = result.total;
         }
