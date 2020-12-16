@@ -81,7 +81,7 @@ ctrl.createRequest = function (req, res, next) {
 }
 
 ctrl.getOwnRequests = function (req, res, next) {
-    req.query.provider = req.user._id;
+    req.query.provider = req.user._id.toHexString();
     asyncLib.parallel({
         counts: function (callback) {
             RequestSchema.countRequestsByCategory(req.query, callback);
