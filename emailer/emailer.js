@@ -33,7 +33,7 @@ class EmailSender {
             `;
 
             await this.transporter.sendMail({
-                from: process.env.EMAIL,
+                from: process.env.EMAIL_ADDRESS,
                 to: recepientInfo.email,
                 subject: `Verify your email`,
                 html: mailHTML,
@@ -86,7 +86,7 @@ class EmailSender {
             `;
 
             await this.transporter.sendMail({
-                from: process.env.EMAIL,
+                from: process.env.EMAIL_ADDRESS,
                 to: recepientInfo.email,
                 subject: `Atrons, material removal notice`,
                 html: mailHTML,
@@ -112,7 +112,7 @@ class EmailSender {
             </div>
             `;
             await this.transporter.sendMail({
-                from: process.env.EMAIL,
+                from: process.env.EMAIL_ADDRESS,
                 to: recepientInfo.email,
                 subject: `Atrons, material removal notice`,
                 html: mailHTML,
@@ -138,7 +138,7 @@ class EmailSender {
             </div>
             `;
             await this.transporter.sendMail({
-                from: process.env.EMAIL,
+                from: process.env.EMAIL_ADDRESS,
                 to: recepientInfo.email,
                 subject: `Atrons, material removal notice`,
                 html: mailHTML,
